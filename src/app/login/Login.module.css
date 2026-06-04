@@ -1,0 +1,68 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: var(--bg-main);
+  background-image: radial-gradient(circle at top right, var(--primary-light), transparent);
+}
+
+.loginCard {
+  width: 100%;
+  max-width: 400px;
+  padding: 2rem;
+  background-color: var(--bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-light);
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.logo {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.logoTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+}
+
+.logoSubtitle {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.submitBtn {
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.error {
+  padding: 0.75rem;
+  background-color: var(--danger-bg);
+  color: var(--danger);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
