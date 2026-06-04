@@ -1,0 +1,158 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  transition: color var(--transition-fast);
+}
+
+.backLink:hover {
+  color: var(--primary);
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.infoCard {
+  height: fit-content;
+}
+
+.sideStack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.infoList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.infoRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.infoIcon {
+  color: var(--text-tertiary);
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+}
+
+.infoLabel {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.125rem;
+}
+
+.infoValue {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.infoLink {
+  font-size: 0.9rem;
+  color: var(--primary);
+  font-weight: 500;
+  text-decoration: underline;
+}
+
+.currentBadge {
+  margin-bottom: 1rem;
+}
+
+.tempSelect {
+  margin-top: 0.75rem;
+}
+
+.dealItem {
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+  background-color: var(--bg-main);
+}
+
+.dealDate {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  margin-bottom: 0.5rem;
+}
+
+.dealRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  padding: 0.25rem 0;
+}
+
+.dealRow strong {
+  color: var(--text-primary);
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid var(--border);
+  padding-top: 0.75rem;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.totalValue {
+  color: var(--success);
+}
+
+.dealForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.dealDesc {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.dealFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-light);
+}

@@ -21,7 +21,25 @@ export async function getActiveLeads() {
   return leads;
 }
 
-export async function createLead(data: { name: string, whatsApp: string, interest: string, temperature: Temperature, source: string }) {
+export async function getLead(leadId: string) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) throw new Error("Não autorizado");
+
+  const lead = await prisma.lead.findFirst({
+    where: { id: leadId, agentId: session.user.id },
+    include: { deals: true },
+  });
+
+  return lead;
+}
+
+export async function createLead(data: {
+  name: string;
+  whatsApp: string;
+  interest: string;
+  temperature: Temperature;
+  source: string;
+}) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) throw new Error("Não autorizado");
 
@@ -34,6 +52,30 @@ export async function createLead(data: { name: string, whatsApp: string, interes
   });
 
   revalidatePath("/leads");
+  revalidatePath("/dashboard");
+}
+
+export async function updateLead(
+  leadId: string,
+  data: {
+    name?: string;
+    whatsApp?: string;
+    interest?: string;
+    temperature?: Temperature;
+    source?: string;
+    funnelStage?: FunnelStage;
+  }
+) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) throw new Error("Não autorizado");
+
+  await prisma.lead.update({
+    where: { id: leadId, agentId: session.user.id },
+    data,
+  });
+
+  revalidatePath("/leads");
+  revalidatePath(`/leads/${leadId}`);
   revalidatePath("/dashboard");
 }
 
@@ -59,5 +101,35 @@ export async function archiveLead(leadId: string) {
   });
 
   revalidatePath("/leads");
+  revalidatePath("/dashboard");
+}
+
+export async function createDeal(data: {
+  leadId: string;
+  firstMonthCommission?: number;
+  recurringManagementFee?: number;
+}) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) throw new Error("Não autorizado");
+
+  await prisma.$transaction(async (tx) => {
+    await tx.deal.create({
+      data: {
+        leadId: data.leadId,
+        agentId: session.user.id,
+        firstMonthCommission: data.firstMonthCommission ?? null,
+        recurringManagementFee: data.recurringManagementFee ?? null,
+      }
+    });
+
+    // Move lead to CLOSED_WON
+    await tx.lead.update({
+      where: { id: data.leadId },
+      data: { funnelStage: "CLOSED_WON" },
+    });
+  });
+
+  revalidatePath("/leads");
+  revalidatePath(`/leads/${data.leadId}`);
   revalidatePath("/dashboard");
 }

@@ -1,0 +1,145 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 900px) {
+  .summaryGrid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.summaryCard {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.summaryIcon { font-size: 1.25rem; }
+
+.summaryNum {
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-family: 'Outfit', sans-serif;
+  color: var(--text-primary);
+}
+
+.summaryLabel {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.newUserBtn {
+  background-color: var(--primary);
+  color: white;
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: background-color var(--transition-fast);
+}
+
+.newUserBtn:hover {
+  background-color: var(--primary-hover);
+}
+
+.table {
+  display: flex;
+  flex-direction: column;
+}
+
+.tableHeader {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 0.8fr 0.8fr 0.8fr 0.8fr 1.2fr;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.tableRow {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 0.8fr 0.8fr 0.8fr 0.8fr 1.2fr;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  align-items: center;
+  border-bottom: 1px solid var(--border-light);
+  transition: background-color var(--transition-fast);
+}
+
+.tableRow:last-child { border-bottom: none; }
+
+.tableRow:hover { background-color: var(--bg-main); }
+
+.agentName {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.agentUsername {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.badgeAdmin {
+  background: #ede9fe;
+  color: #7c3aed;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+}
+
+.badgeAgent {
+  background: var(--primary-light);
+  color: var(--primary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+}
+
+.num {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.commission {
+  font-weight: 700;
+  color: var(--success);
+  font-size: 0.9rem;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
