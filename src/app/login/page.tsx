@@ -33,6 +33,7 @@ export default function LoginPage() {
         router.refresh();
       }
     } catch (err) {
+      console.error('Login error:', err);
       setError('Ocorreu um erro ao fazer login. Tente novamente.');
     } finally {
       setIsLoading(false);

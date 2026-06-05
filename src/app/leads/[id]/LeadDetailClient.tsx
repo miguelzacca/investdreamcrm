@@ -56,6 +56,7 @@ function CloseDealModal({ isOpen, onClose, leadId }: CloseDealModalProps) {
       if (!isNaN(rent)) {
         if (firstMonthPct) {
           const pct = parseFloat(firstMonthPct);
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           if (!isNaN(pct)) setCommission((rent * (pct / 100)).toFixed(2));
         }
         if (recurringPct) {

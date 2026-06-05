@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import { Card, CardContent } from '@/components/ui/Card';
 import { TemperatureBadge, StageBadge } from '@/components/ui/Badge';
 import { getDashboardStats } from './actions';
 import styles from './Dashboard.module.css';
