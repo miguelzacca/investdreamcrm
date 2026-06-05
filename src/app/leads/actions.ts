@@ -108,6 +108,7 @@ export async function createDeal(data: {
   leadId: string;
   firstMonthCommission?: number;
   recurringManagementFee?: number;
+  rentAmount?: number;
 }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) throw new Error("Não autorizado");
@@ -119,6 +120,7 @@ export async function createDeal(data: {
         agentId: session.user.id,
         firstMonthCommission: data.firstMonthCommission ?? null,
         recurringManagementFee: data.recurringManagementFee ?? null,
+        rentAmount: data.rentAmount ?? null,
       }
     });
 

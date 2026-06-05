@@ -52,9 +52,17 @@ export default async function DashboardPage() {
           </Card>
           <Card className={styles.summaryCard}>
             <CardContent className={styles.summaryContent}>
-              <span className={styles.summaryLabel}>Comissão Total Acumulada</span>
+              <span className={styles.summaryLabel}>Total Alugado Bruto</span>
+              <strong className={`${styles.summaryValue}`}>
+                {formatCurrency(stats.totalRentAmount)}
+              </strong>
+            </CardContent>
+          </Card>
+          <Card className={styles.summaryCard}>
+            <CardContent className={styles.summaryContent}>
+              <span className={styles.summaryLabel}>Comissão Total Acumulada (1º Mês + Taxas)</span>
               <strong className={`${styles.summaryValue} ${styles.summaryGreen}`}>
-                {formatCurrency(stats.totalCommission)}
+                {formatCurrency(stats.totalCommission + stats.totalRecurringFee)}
               </strong>
             </CardContent>
           </Card>

@@ -40,8 +40,28 @@ export async function getDashboardStats() {
     0
   );
 
+  const rentAmountThisMonth = dealsThisMonth.reduce(
+    (sum, d) => sum + (d.rentAmount ?? 0),
+    0
+  );
+
+  const recurringFeeThisMonth = dealsThisMonth.reduce(
+    (sum, d) => sum + (d.recurringManagementFee ?? 0),
+    0
+  );
+
   const totalCommission = allDeals.reduce(
     (sum, d) => sum + (d.firstMonthCommission ?? 0),
+    0
+  );
+
+  const totalRentAmount = allDeals.reduce(
+    (sum, d) => sum + (d.rentAmount ?? 0),
+    0
+  );
+
+  const totalRecurringFee = allDeals.reduce(
+    (sum, d) => sum + (d.recurringManagementFee ?? 0),
     0
   );
 
@@ -50,8 +70,12 @@ export async function getDashboardStats() {
     hotLeads,
     dealsThisMonth: dealsThisMonth.length,
     commissionThisMonth,
+    rentAmountThisMonth,
+    recurringFeeThisMonth,
     totalDeals: allDeals.length,
     totalCommission,
+    totalRentAmount,
+    totalRecurringFee,
     recentLeads,
   };
 }

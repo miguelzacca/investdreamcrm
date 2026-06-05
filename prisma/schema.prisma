@@ -64,6 +64,7 @@ model Deal {
   agentId                String
   firstMonthCommission   Float?   // Comissao de primeiro aluguel
   recurringManagementFee Float?   // Taxa de administracao mensal (se houver)
+  rentAmount             Float?   // Valor Bruto do Aluguel
   closedAt               DateTime @default(now())
   
   lead                   Lead     @relation(fields: [leadId], references: [id])
