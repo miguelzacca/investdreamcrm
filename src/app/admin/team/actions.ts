@@ -45,3 +45,41 @@ export async function getTeamStats() {
     };
   });
 }
+
+export async function getAgentDetail(agentId: string) {
+  await requireAdmin();
+
+  const agent = await prisma.user.findUnique({
+    where: { id: agentId },
+    include: {
+      leads: {
+        orderBy: { createdAt: "desc" },
+      },
+      deals: true,
+    },
+  });
+
+  if (!agent) return null;
+
+  const activeLeads = agent.leads.filter((l) => !l.isArchived);
+  const archivedLeads = agent.leads.filter((l) => l.isArchived);
+  const hotLeads = activeLeads.filter((l) => l.temperature === "HOT").length;
+  const closedWon = activeLeads.filter((l) => l.funnelStage === "CLOSED_WON").length;
+  const totalCommission = agent.deals.reduce(
+    (sum, d) => sum + (d.firstMonthCommission ?? 0),
+    0
+  );
+
+  return {
+    id: agent.id,
+    name: agent.name,
+    username: agent.username,
+    role: agent.role,
+    activeLeads,
+    archivedLeads,
+    hotLeads,
+    closedWon,
+    totalDeals: agent.deals.length,
+    totalCommission,
+  };
+}

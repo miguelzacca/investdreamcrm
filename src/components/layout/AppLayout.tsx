@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
-import { LayoutDashboard, Users, UserPlus, LogOut, FileText } from 'lucide-react';
+import { LayoutDashboard, Users, UserPlus, LogOut, FileText, LayoutList } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import styles from './AppLayout.module.css';
 
@@ -25,6 +25,7 @@ export function AppLayout({ children, title }: AppLayoutProps) {
   ];
 
   if (isAdmin) {
+    navItems.push({ name: 'Todos os Leads', href: '/admin/leads', icon: LayoutList });
     navItems.push({ name: 'Equipe (Admin)', href: '/admin/team', icon: Users });
     navItems.push({ name: 'Novo Usuário', href: '/admin/users/new', icon: UserPlus });
   }

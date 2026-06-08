@@ -25,13 +25,20 @@ export async function getLead(leadId: string) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) throw new Error("Não autorizado");
 
+  const isAdmin = session.user.role === "ADMIN";
+
   const lead = await prisma.lead.findFirst({
-    where: { id: leadId, agentId: session.user.id },
+    where: {
+      id: leadId,
+      // Admins can see any lead; agents only see their own
+      ...(!isAdmin ? { agentId: session.user.id } : {}),
+    },
     include: { deals: true },
   });
 
   return lead;
 }
+
 
 export async function createLead(data: {
   name: string;
@@ -91,18 +98,29 @@ export async function updateLeadStage(leadId: string, newStage: FunnelStage) {
   revalidatePath("/leads");
 }
 
-export async function archiveLead(leadId: string) {
+export async function archiveLead(leadId: string, reason: string) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) throw new Error("Não autorizado");
 
   await prisma.lead.update({
     where: { id: leadId },
-    data: { isArchived: true }
+    data: { isArchived: true, archiveReason: reason },
   });
 
   revalidatePath("/leads");
   revalidatePath("/dashboard");
 }
+
+export async function getArchivedLeads() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) throw new Error("Não autorizado");
+
+  return prisma.lead.findMany({
+    where: { agentId: session.user.id, isArchived: true },
+    orderBy: { updatedAt: "desc" },
+  });
+}
+
 
 export async function createDeal(data: {
   leadId: string;

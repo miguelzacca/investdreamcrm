@@ -69,7 +69,7 @@ export default async function TeamPage() {
               <span>Comissão Total</span>
             </div>
             {team.map(agent => (
-              <div key={agent.id} className={styles.tableRow}>
+              <Link key={agent.id} href={`/admin/team/${agent.id}`} className={styles.tableRow}>
                 <span className={styles.agentName}>{agent.name}</span>
                 <span className={styles.agentUsername}>@{agent.username}</span>
                 <span>
@@ -81,7 +81,7 @@ export default async function TeamPage() {
                 <span className={styles.num}>{agent.hotLeads}</span>
                 <span className={styles.num}>{agent.closedWon}</span>
                 <span className={styles.commission}>{formatCurrency(agent.totalCommission)}</span>
-              </div>
+              </Link>
             ))}
             {team.length === 0 && (
               <div className={styles.emptyState}>Nenhum agente encontrado.</div>

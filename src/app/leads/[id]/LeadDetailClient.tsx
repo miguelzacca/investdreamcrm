@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Select';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Textarea';
 import { TemperatureBadge, StageBadge } from '@/components/ui/Badge';
 import { updateLead, archiveLead, createDeal } from '../actions';
 import styles from './LeadDetailClient.module.css';
@@ -163,10 +164,56 @@ function CloseDealModal({ isOpen, onClose, leadId }: CloseDealModalProps) {
   );
 }
 
+interface ArchiveModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: (reason: string) => void;
+  isPending: boolean;
+}
+
+function ArchiveModal({ isOpen, onClose, onConfirm, isPending }: ArchiveModalProps) {
+  const [reason, setReason] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reason.trim()) return;
+    onConfirm(reason.trim());
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="📦 Arquivar Lead">
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', margin: 0 }}>
+          Informe o motivo do arquivamento. Este registro ficará visível para o administrador.
+        </p>
+        <Textarea
+          label="Motivo do arquivamento *"
+          placeholder="Ex: Cliente não tem interesse no momento, comprou com outro corretor..."
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          rows={3}
+          required
+          autoFocus
+        />
+        <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+          <Button type="button" variant="secondary" onClick={onClose} disabled={isPending}>
+            Cancelar
+          </Button>
+          <Button type="submit" variant="danger" isLoading={isPending} disabled={!reason.trim()}>
+            <Archive size={14} style={{ marginRight: '0.25rem' }} />
+            Arquivar
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
 export default function LeadDetailClient({ lead }: { lead: LeadWithDeals }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isDealModalOpen, setIsDealModalOpen] = useState(false);
+  const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
 
   const handleStageChange = (newStage: string) => {
     startTransition(async () => {
@@ -182,10 +229,9 @@ export default function LeadDetailClient({ lead }: { lead: LeadWithDeals }) {
     });
   };
 
-  const handleArchive = () => {
-    if (!confirm('Arquivar este lead? Ele não aparecerá mais no funil.')) return;
+  const handleArchiveConfirm = (reason: string) => {
     startTransition(async () => {
-      await archiveLead(lead.id);
+      await archiveLead(lead.id, reason);
       router.push('/leads');
     });
   };
@@ -211,16 +257,18 @@ export default function LeadDetailClient({ lead }: { lead: LeadWithDeals }) {
         </Link>
 
         <div className={styles.actions}>
-          <Button
-            variant="danger"
-            size="sm"
-            onClick={handleArchive}
-            disabled={isPending}
-          >
-            <Archive size={14} style={{ marginRight: '0.25rem' }} />
-            Arquivar
-          </Button>
-          {lead.funnelStage !== 'CLOSED_WON' && (
+          {!lead.isArchived && (
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={() => setIsArchiveModalOpen(true)}
+              disabled={isPending}
+            >
+              <Archive size={14} style={{ marginRight: '0.25rem' }} />
+              Arquivar
+            </Button>
+          )}
+          {!lead.isArchived && lead.funnelStage !== 'CLOSED_WON' && (
             <Button
               size="sm"
               onClick={() => setIsDealModalOpen(true)}
@@ -232,6 +280,26 @@ export default function LeadDetailClient({ lead }: { lead: LeadWithDeals }) {
           )}
         </div>
       </div>
+
+      {/* Archived banner */}
+      {lead.isArchived && (
+        <div style={{
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border)',
+          borderLeft: '3px solid var(--text-tertiary)',
+          borderRadius: 'var(--radius-md)',
+          padding: '0.75rem 1rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          fontSize: '0.875rem',
+          color: 'var(--text-secondary)',
+        }}>
+          <Archive size={15} />
+          <strong>Lead arquivado.</strong>
+          {lead.archiveReason && <span>Motivo: {lead.archiveReason}</span>}
+        </div>
+      )}
 
       <div className={styles.grid}>
         {/* Info Card */}
@@ -378,6 +446,13 @@ export default function LeadDetailClient({ lead }: { lead: LeadWithDeals }) {
         isOpen={isDealModalOpen}
         onClose={() => setIsDealModalOpen(false)}
         leadId={lead.id}
+      />
+
+      <ArchiveModal
+        isOpen={isArchiveModalOpen}
+        onClose={() => setIsArchiveModalOpen(false)}
+        onConfirm={handleArchiveConfirm}
+        isPending={isPending}
       />
     </div>
   );

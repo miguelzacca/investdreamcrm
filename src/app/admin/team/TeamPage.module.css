@@ -96,6 +96,13 @@
 
 .tableRow:hover { background-color: var(--bg-main); }
 
+/* tableRow can now be an <a> tag (Link) */
+.tableRow {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
 .agentName {
   font-weight: 600;
   font-size: 0.9rem;
