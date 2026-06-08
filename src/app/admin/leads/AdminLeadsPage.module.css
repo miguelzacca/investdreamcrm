@@ -73,7 +73,6 @@
 }
 
 .countBadge {
-  margin-left: auto;
   font-size: 0.8rem;
   font-weight: 600;
   color: var(--text-secondary);
@@ -81,6 +80,29 @@
   border: 1px solid var(--border-light);
   border-radius: 999px;
   padding: 0.2rem 0.75rem;
+}
+
+.addLeadBtn {
+  margin-left: auto;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 0.5rem 1.125rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+  white-space: nowrap;
+}
+
+.addLeadBtn:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.addLeadBtn:active {
+  transform: translateY(0);
 }
 
 /* ── Table ── */

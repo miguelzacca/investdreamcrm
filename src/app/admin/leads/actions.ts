@@ -1,8 +1,10 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { Temperature } from "@prisma/client";
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions);
@@ -33,7 +35,116 @@ export async function getAdminLeads(opts?: {
 export async function getAllAgents() {
   await requireAdmin();
   return prisma.user.findMany({
+    where: { role: "AGENT" },
     select: { id: true, name: true, username: true, role: true },
     orderBy: { name: "asc" },
   });
+}
+
+type LeadInput = {
+  name: string;
+  whatsApp: string;
+  interest?: string;
+  temperature: Temperature;
+  source?: string;
+};
+
+/** Admin creates a lead and assigns it directly to a specific agent. */
+export async function adminCreateLeadForAgent(
+  agentId: string,
+  data: LeadInput
+) {
+  await requireAdmin();
+
+  if (!agentId) throw new Error("Corretor não informado.");
+
+  await prisma.lead.create({
+    data: {
+      ...data,
+      agentId,
+      funnelStage: "NEW_LEAD",
+    },
+  });
+
+  revalidatePath("/admin/leads");
+  revalidatePath("/admin/team");
+  revalidatePath("/leads");
+  revalidatePath("/dashboard");
+}
+
+/**
+ * Admin creates a lead via round-robin queue.
+ * The lead is assigned to the AGENT with the fewest active leads.
+ * Ties broken alphabetically by name for a stable, predictable order.
+ */
+export async function adminCreateLeadRoundRobin(data: LeadInput) {
+  await requireAdmin();
+
+  // Fetch all agents and their active lead counts in one query
+  const agents = await prisma.user.findMany({
+    where: { role: "AGENT" },
+    select: {
+      id: true,
+      name: true,
+      _count: {
+        select: { leads: { where: { isArchived: false } } },
+      },
+    },
+    orderBy: { name: "asc" },
+  });
+
+  if (agents.length === 0) {
+    throw new Error("Nenhum corretor disponível para receber leads.");
+  }
+
+  // Pick agent with the least active leads (stable sort: name is already alphabetical)
+  const target = agents.reduce((min, a) =>
+    a._count.leads < min._count.leads ? a : min
+  );
+
+  await prisma.lead.create({
+    data: {
+      ...data,
+      agentId: target.id,
+      funnelStage: "NEW_LEAD",
+    },
+  });
+
+  revalidatePath("/admin/leads");
+  revalidatePath("/admin/team");
+  revalidatePath("/leads");
+  revalidatePath("/dashboard");
+
+  return { assignedTo: target.name };
+}
+
+/** Preview: returns who would receive the NEXT round-robin lead (read-only). */
+export async function getNextRoundRobinAgent() {
+  await requireAdmin();
+
+  const agents = await prisma.user.findMany({
+    where: { role: "AGENT" },
+    select: {
+      id: true,
+      name: true,
+      username: true,
+      _count: {
+        select: { leads: { where: { isArchived: false } } },
+      },
+    },
+    orderBy: { name: "asc" },
+  });
+
+  if (agents.length === 0) return null;
+
+  const target = agents.reduce((min, a) =>
+    a._count.leads < min._count.leads ? a : min
+  );
+
+  return {
+    id: target.id,
+    name: target.name,
+    username: target.username,
+    activeLeads: target._count.leads,
+  };
 }

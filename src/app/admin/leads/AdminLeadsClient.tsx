@@ -3,6 +3,7 @@
 import React, { useState, useTransition } from "react";
 import Link from "next/link";
 import { Lead } from "@prisma/client";
+import { AdminNewLeadModal } from "@/components/leads/AdminNewLeadModal";
 import styles from "./AdminLeadsPage.module.css";
 
 type LeadWithAgent = Lead & {
@@ -48,6 +49,7 @@ export default function AdminLeadsClient({
   const [showArchived, setShowArchived] = useState(initialArchived);
   const [agentId, setAgentId] = useState(initialAgentId);
   const [isPending, startTransition] = useTransition();
+  const [isAddLeadOpen, setIsAddLeadOpen] = useState(false);
 
   const applyFilters = (newAgentId: string, newArchived: boolean) => {
     startTransition(async () => {
@@ -120,7 +122,21 @@ export default function AdminLeadsClient({
         <span className={styles.countBadge}>
           {isPending ? "..." : `${leads.length} lead${leads.length !== 1 ? "s" : ""}`}
         </span>
+
+        <button
+          id="btn-admin-add-lead"
+          className={styles.addLeadBtn}
+          onClick={() => setIsAddLeadOpen(true)}
+        >
+          + Adicionar Lead
+        </button>
       </div>
+
+      <AdminNewLeadModal
+        isOpen={isAddLeadOpen}
+        onClose={() => setIsAddLeadOpen(false)}
+        agents={agents}
+      />
 
       {/* Table */}
       <div className={styles.tableWrapper}>
