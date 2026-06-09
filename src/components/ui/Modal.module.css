@@ -1,55 +1,78 @@
+/* ── Overlay ── */
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.5);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(6px) saturate(1.4);
+  -webkit-backdrop-filter: blur(6px) saturate(1.4);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 100;
-  padding: 1rem;
-  animation: overlayIn 200ms ease;
+  padding: 1.5rem;
+  animation: overlayIn 200ms var(--ease-out);
 }
 
 @keyframes overlayIn {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to   { opacity: 1; }
 }
 
+/* ── Modal container ── */
 .modal {
   background: var(--bg-card);
-  border-radius: var(--radius-xl);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+  border-radius: var(--radius-2xl);
+  box-shadow:
+    0 32px 64px rgba(15, 23, 42, 0.16),
+    0 8px 24px rgba(15, 23, 42, 0.10),
+    0 0 0 1px rgba(255,255,255,0.6) inset;
   border: 1px solid var(--border);
   width: 100%;
-  animation: modalIn 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  animation: modalIn 280ms var(--ease-spring);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Top color accent bar */
+.modal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary) 0%, #7c3aed 50%, #0891b2 100%);
+  border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
 }
 
 @keyframes modalIn {
-  from { opacity: 0; transform: scale(0.96) translateY(8px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
+  from { opacity: 0; transform: scale(0.93) translateY(16px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-.sm { max-width: 400px; }
-.md { max-width: 520px; }
-.lg { max-width: 720px; }
+.sm { max-width: 420px; }
+.md { max-width: 540px; }
+.lg { max-width: 740px; }
 
+/* ── Header ── */
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.25rem 1.5rem;
+  padding: 1.25rem 1.5rem 1rem;
   border-bottom: 1px solid var(--border-light);
 }
 
 .title {
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: 1.0625rem;
+  font-weight: 700;
   color: var(--text-primary);
   margin: 0;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  letter-spacing: -0.025em;
 }
 
+/* ── Close button ── */
 .closeBtn {
   display: flex;
   align-items: center;
@@ -58,17 +81,20 @@
   height: 2rem;
   border-radius: var(--radius-md);
   border: none;
-  background: transparent;
+  background: var(--border-light);
   color: var(--text-secondary);
   cursor: pointer;
-  transition: background-color var(--transition-fast), color var(--transition-fast);
+  transition: all var(--t-fast);
+  flex-shrink: 0;
 }
 
 .closeBtn:hover {
-  background-color: var(--border-light);
-  color: var(--text-primary);
+  background-color: var(--danger-bg);
+  color: var(--danger);
+  transform: scale(1.08);
 }
 
+/* ── Body ── */
 .body {
   padding: 1.5rem;
 }

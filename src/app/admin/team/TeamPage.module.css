@@ -2,8 +2,10 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  animation: fadeUp 280ms var(--ease-out) both;
 }
 
+/* ── Summary cards ── */
 .summaryGrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -16,29 +18,56 @@
 
 .summaryCard {
   background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 1.25rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 1.25rem 1.375rem;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  box-shadow: var(--shadow-sm);
+  gap: 0.375rem;
+  box-shadow: var(--shadow-card);
+  transition: all var(--t-normal);
+  position: relative;
+  overflow: hidden;
 }
 
-.summaryIcon { font-size: 1.25rem; }
+.summaryCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--primary), #7c3aed);
+  opacity: 0;
+  transition: opacity var(--t-fast);
+}
+
+.summaryCard:hover {
+  box-shadow: var(--shadow-md);
+  border-color: rgba(79,70,229,0.2);
+  transform: translateY(-2px);
+}
+
+.summaryCard:hover::before { opacity: 1; }
+
+.summaryIcon { font-size: 1.375rem; }
 
 .summaryNum {
-  font-size: 1.5rem;
-  font-weight: 700;
-  font-family: 'Outfit', sans-serif;
+  font-size: 1.75rem;
+  font-weight: 800;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   color: var(--text-primary);
+  letter-spacing: -0.04em;
+  line-height: 1;
 }
 
 .summaryLabel {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
+  font-weight: 500;
 }
 
+/* ── Toolbar ── */
 .toolbar {
   display: flex;
   justify-content: space-between;
@@ -46,24 +75,36 @@
 }
 
 .sectionTitle {
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
 }
 
 .newUserBtn {
-  background-color: var(--primary);
+  background: linear-gradient(135deg, var(--primary), #7c3aed);
   color: white;
   padding: 0.5rem 1.25rem;
   border-radius: var(--radius-md);
-  font-size: 0.875rem;
-  font-weight: 600;
-  transition: background-color var(--transition-fast);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  transition: all var(--t-normal);
+  box-shadow: 0 2px 8px rgba(79,70,229,0.3);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
 }
 
 .newUserBtn:hover {
-  background-color: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-primary);
+  filter: brightness(1.06);
+  color: white;
 }
 
+/* ── Table ── */
 .table {
   display: flex;
   flex-direction: column;
@@ -73,72 +114,84 @@
   display: grid;
   grid-template-columns: 1.5fr 1fr 1.5fr 0.8fr 0.8fr 0.8fr 0.8fr 1.2fr;
   gap: 1rem;
-  padding: 0.75rem 1.25rem;
-  font-size: 0.72rem;
-  font-weight: 600;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.68rem;
+  font-weight: 700;
   color: var(--text-tertiary);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.07em;
   border-bottom: 1px solid var(--border-light);
+  background: var(--border-light);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
 .tableRowWithEmail {
   display: grid;
   grid-template-columns: 1.5fr 1fr 1.5fr 0.8fr 0.8fr 0.8fr 0.8fr 1.2fr;
   gap: 1rem;
-  padding: 1rem 1.25rem;
+  padding: 0.875rem 1.25rem;
   align-items: center;
   border-bottom: 1px solid var(--border-light);
-  transition: background-color var(--transition-fast);
+  transition: background-color var(--t-fast);
+  animation: fadeIn 180ms var(--ease-out) both;
 }
 
 .tableRowWithEmail:last-child { border-bottom: none; }
-.tableRowWithEmail:hover { background-color: var(--bg-main); }
+
+.tableRowWithEmail:hover {
+  background: var(--primary-light);
+}
 
 .agentName {
-  font-weight: 600;
-  font-size: 0.9rem;
+  font-weight: 700;
+  font-size: 0.875rem;
   color: var(--text-primary);
 }
 
 .agentUsername {
-  font-size: 0.85rem;
+  font-size: 0.775rem;
   color: var(--text-secondary);
 }
 
 .badgeAdmin {
-  background: #ede9fe;
-  color: #7c3aed;
-  font-size: 0.72rem;
-  font-weight: 600;
-  padding: 0.2rem 0.6rem;
-  border-radius: 999px;
+  background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+  color: #5b21b6;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.225rem 0.65rem;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: 1px solid rgba(124,58,237,0.2);
 }
 
 .badgeAgent {
   background: var(--primary-light);
   color: var(--primary);
-  font-size: 0.72rem;
-  font-weight: 600;
-  padding: 0.2rem 0.6rem;
-  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.225rem 0.65rem;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: 1px solid rgba(79,70,229,0.18);
 }
 
 .num {
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-primary);
-  font-size: 0.9rem;
+  font-size: 0.875rem;
 }
 
 .commission {
   font-weight: 700;
   color: var(--success);
-  font-size: 0.9rem;
+  font-size: 0.875rem;
 }
 
 .emptyState {
   text-align: center;
-  padding: 3rem;
+  padding: 3.5rem;
   color: var(--text-secondary);
   font-size: 0.875rem;
 }

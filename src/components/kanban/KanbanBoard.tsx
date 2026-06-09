@@ -13,12 +13,12 @@ interface KanbanBoardProps {
 }
 
 const STAGES: { id: FunnelStage; title: string; color: string }[] = [
-  { id: 'NEW_LEAD', title: 'Novo Lead', color: '#94a3b8' },
-  { id: 'CONTACTED', title: 'Contato Feito', color: '#3b82f6' },
-  { id: 'VIEWING_SCHEDULED', title: 'Visita Agendada', color: '#8b5cf6' },
-  { id: 'PROPOSAL', title: 'Proposta', color: '#f59e0b' },
-  { id: 'NEGOTIATION', title: 'Negociação', color: '#ef4444' },
-  { id: 'CLOSED_WON', title: 'Fechado ✓', color: '#10b981' },
+  { id: 'NEW_LEAD',          title: 'Novo Lead',        color: '#64748b' },
+  { id: 'CONTACTED',         title: 'Contato Feito',    color: '#3b82f6' },
+  { id: 'VIEWING_SCHEDULED', title: 'Visita Agendada',  color: '#8b5cf6' },
+  { id: 'PROPOSAL',          title: 'Proposta',         color: '#f59e0b' },
+  { id: 'NEGOTIATION',       title: 'Negociação',       color: '#e11d48' },
+  { id: 'CLOSED_WON',        title: 'Fechado ✓',        color: '#059669' },
 ];
 
 export function KanbanBoard({ initialLeads }: KanbanBoardProps) {

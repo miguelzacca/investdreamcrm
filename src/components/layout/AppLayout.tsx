@@ -19,6 +19,13 @@ export function AppLayout({ children, title }: AppLayoutProps) {
   const { data: session } = useSession();
 
   const isAdmin = session?.user?.role === 'ADMIN';
+  const displayName = session?.user?.name || session?.user?.username || '';
+  const initials = displayName
+    .split(' ')
+    .slice(0, 2)
+    .map((n: string) => n[0])
+    .join('')
+    .toUpperCase();
 
   const navItems = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -35,8 +42,8 @@ export function AppLayout({ children, title }: AppLayoutProps) {
     <div className={styles.layout}>
       <aside className={styles.sidebar}>
         <div className={styles.logo}>
-          <Image src="/image.png" alt="Invest Dream Logo" width={32} height={32} />
-          Invest Dream CRM
+          <Image src="/image.png" alt="Invest Dream Logo" width={30} height={30} />
+          Invest Dream
         </div>
         
         <nav className={styles.nav}>
@@ -49,7 +56,7 @@ export function AppLayout({ children, title }: AppLayoutProps) {
                 href={item.href}
                 className={`${styles.navItem} ${isActive ? styles.active : ''}`}
               >
-                <Icon size={18} />
+                <Icon size={17} />
                 {item.name}
               </Link>
             );
@@ -58,15 +65,18 @@ export function AppLayout({ children, title }: AppLayoutProps) {
 
         <div className={styles.footer}>
           <div className={styles.userInfo}>
-            <span className={styles.userName}>{session?.user?.name || session?.user?.username}</span>
-            <span className={styles.userRole}>{isAdmin ? 'Administrador' : 'Corretor'}</span>
+            <div className={styles.userAvatar}>{initials || '?'}</div>
+            <div className={styles.userTexts}>
+              <span className={styles.userName}>{displayName}</span>
+              <span className={styles.userRole}>{isAdmin ? 'Administrador' : 'Corretor'}</span>
+            </div>
           </div>
           <Button 
             variant="ghost" 
             className="w-full justify-start text-danger" 
             onClick={() => signOut({ callbackUrl: '/login' })}
           >
-            <LogOut size={18} className="mr-2" style={{marginRight: '0.5rem'}} />
+            <LogOut size={16} style={{ marginRight: '0.5rem' }} />
             Sair
           </Button>
         </div>

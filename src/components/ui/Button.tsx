@@ -30,7 +30,7 @@ export function Button({
       {...props}
     >
       {isLoading ? (
-        <span className={styles.loader} style={{ marginRight: '0.5rem' }}>Carregando...</span>
+        <span className={styles.loader}>Carregando...</span>
       ) : children}
     </button>
   );

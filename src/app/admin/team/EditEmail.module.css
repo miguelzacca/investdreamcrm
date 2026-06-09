@@ -8,15 +8,16 @@
 }
 
 .emailIcon {
-  color: var(--text-tertiary);
+  color: var(--primary);
   flex-shrink: 0;
+  opacity: 0.6;
 }
 
 .emailValue {
   display: flex;
   align-items: center;
   gap: 0.3rem;
-  font-size: 0.78rem;
+  font-size: 0.775rem;
   color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
@@ -24,7 +25,7 @@
 }
 
 .noEmail {
-  font-size: 0.78rem;
+  font-size: 0.775rem;
   color: var(--text-tertiary);
   font-style: italic;
 }
@@ -35,20 +36,20 @@
   padding: 0.2rem;
   cursor: pointer;
   color: var(--text-tertiary);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: opacity 0.15s, color 0.15s;
+  transition: opacity var(--t-fast), color var(--t-fast), background var(--t-fast);
   flex-shrink: 0;
 }
 
-/* Show edit button on row hover */
 .emailCell:hover .editBtn,
 .editBtn:focus {
   opacity: 1;
   color: var(--primary);
+  background: var(--primary-light);
 }
 
 /* Edit mode */
@@ -68,13 +69,19 @@
 .emailInput {
   width: 100%;
   padding: 0.3rem 0.5rem;
-  font-size: 0.78rem;
-  border: 1px solid var(--primary);
+  font-size: 0.775rem;
+  border: 1.5px solid var(--primary);
   border-radius: var(--radius-sm);
   background: var(--bg-card);
   color: var(--text-primary);
   outline: none;
-  box-shadow: 0 0 0 2px var(--primary-light);
+  font-family: 'Inter', sans-serif;
+  box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+  transition: box-shadow var(--t-fast);
+}
+
+.emailInput:focus {
+  box-shadow: 0 0 0 3px rgba(79,70,229,0.16);
 }
 
 .errorHint {
@@ -82,7 +89,8 @@
   align-items: center;
   gap: 0.2rem;
   font-size: 0.7rem;
-  color: var(--danger, #ef4444);
+  color: var(--danger);
+  font-weight: 500;
   margin-top: 0.2rem;
 }
 
@@ -92,35 +100,39 @@
   align-items: center;
   justify-content: center;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   width: 26px;
   height: 26px;
   flex-shrink: 0;
-  transition: background-color 0.15s;
+  transition: all var(--t-fast);
 }
 
 .saveBtn {
-  background: var(--success, #22c55e);
+  background: var(--success);
   color: white;
+  box-shadow: 0 2px 6px rgba(5,150,105,0.3);
 }
 
 .saveBtn:hover:not(:disabled) {
-  background: #16a34a;
+  background: var(--success-text);
+  transform: scale(1.08);
 }
 
 .cancelBtn {
-  background: var(--bg-main);
+  background: var(--border-light);
   color: var(--text-secondary);
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--border);
 }
 
 .cancelBtn:hover:not(:disabled) {
-  background: var(--border-light);
+  background: var(--danger-bg);
+  color: var(--danger);
+  border-color: rgba(225,29,72,0.2);
 }
 
 .saveBtn:disabled,
 .cancelBtn:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
 }
