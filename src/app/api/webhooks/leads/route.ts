@@ -51,7 +51,7 @@ export async function POST(request: Request) {
         }
 
         const graphUrl = `https://graph.facebook.com/v19.0/${leadgenId}?access_token=${accessToken}`;
-        const response = await fetch(graphUrl);
+        const response = await fetch(graphUrl, { method: "GET" });
         const data = await response.json();
 
         if (data.error) {
