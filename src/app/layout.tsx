@@ -9,6 +9,9 @@ const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 export const metadata: Metadata = {
   title: "Invest Dream CRM",
   description: "CRM Premium para gestão de aluguéis anuais - Invest Dream",
+  icons: {
+    icon: '/image.png',
+  },
 };
 
 export default function RootLayout({

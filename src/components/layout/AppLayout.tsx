@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import { LayoutDashboard, Users, UserPlus, LogOut, FileText, Send } from 'lucide-react';
@@ -33,7 +34,10 @@ export function AppLayout({ children, title }: AppLayoutProps) {
   return (
     <div className={styles.layout}>
       <aside className={styles.sidebar}>
-        <div className={styles.logo}>Invest Dream CRM</div>
+        <div className={styles.logo}>
+          <Image src="/image.png" alt="Invest Dream Logo" width={32} height={32} />
+          Invest Dream CRM
+        </div>
         
         <nav className={styles.nav}>
           {navItems.map((item) => {

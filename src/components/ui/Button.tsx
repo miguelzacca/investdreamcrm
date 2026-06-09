@@ -31,8 +31,7 @@ export function Button({
     >
       {isLoading ? (
         <span className={styles.loader} style={{ marginRight: '0.5rem' }}>Carregando...</span>
-      ) : null}
-      {children}
+      ) : children}
     </button>
   );
 }
