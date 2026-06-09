@@ -49,9 +49,8 @@ export function AdminNewLeadModal({
 
   // Preview: who gets the next round-robin lead
   const [nextAgent, setNextAgent] = useState<{
+    id: string;
     name: string;
-    username: string;
-    activeLeads: number;
   } | null>(null);
   const [loadingNext, setLoadingNext] = useState(false);
 
@@ -164,11 +163,11 @@ export function AdminNewLeadModal({
               </span>
               <span>
                 <strong>{nextAgent.name}</strong>
-                <small>@{nextAgent.username} · {nextAgent.activeLeads} leads ativos</small>
+                <small>vez desta rodada</small>
               </span>
             </span>
           ) : (
-            <span className={styles.previewEmpty}>Nenhum corretor disponível</span>
+            <span className={styles.previewEmpty}>Nenhum corretor disponível na fila</span>
           )}
         </div>
       )}

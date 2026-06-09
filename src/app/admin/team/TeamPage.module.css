@@ -112,7 +112,7 @@
 
 .tableHeaderWithEmail {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1.5fr 0.8fr 0.8fr 0.8fr 0.8fr 1.2fr 0.4fr;
+  grid-template-columns: 1.5fr 1fr 1.5fr 0.8fr 0.7fr 0.8fr 0.7fr 0.7fr 0.7fr 1.2fr 0.4fr;
   gap: 1rem;
   padding: 0.625rem 1.25rem;
   font-size: 0.68rem;
@@ -194,6 +194,201 @@
   padding: 3.5rem;
   color: var(--text-secondary);
   font-size: 0.875rem;
+}
+
+.naCell {
+  color: var(--text-tertiary);
+  font-size: 0.875rem;
+}
+
+/* ── Queue panel ── */
+.queuePanel {
+  padding: 1rem 1.25rem;
+}
+
+.queuePanelHeader {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-bottom: 0.875rem;
+  flex-wrap: wrap;
+}
+
+.queuePanelTitle {
+  font-size: 0.9rem;
+  font-weight: 700;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: var(--text-primary);
+}
+
+.queuePanelHint {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.queueList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.queueItem {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--primary-light);
+  border: 1.5px solid rgba(79,70,229,0.2);
+  border-radius: var(--radius-full);
+  padding: 0.3rem 0.75rem 0.3rem 0.5rem;
+  font-size: 0.78rem;
+  color: var(--text-primary);
+  transition: all var(--t-fast);
+}
+
+.queueItemPaused {
+  background: var(--border-light);
+  border-color: var(--border);
+  opacity: 0.55;
+}
+
+.queuePos {
+  font-weight: 800;
+  font-size: 0.7rem;
+  color: var(--primary);
+  min-width: 1.25rem;
+  text-align: center;
+}
+
+.queueGrip {
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.queueName {
+  font-weight: 600;
+}
+
+.pausedBadge {
+  font-size: 0.62rem;
+  font-weight: 700;
+  background: rgba(239,68,68,0.12);
+  color: #ef4444;
+  border-radius: var(--radius-full);
+  padding: 0.1rem 0.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.queueLastLead {
+  font-size: 0.68rem;
+  color: var(--text-tertiary);
+  margin-left: 0.25rem;
+}
+
+/* ── Queue order cell ── */
+.queueOrderCell {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.queueOrderBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  background: var(--primary-light);
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 800;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(79,70,229,0.2);
+}
+
+.queueEditBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-sm);
+  transition: all var(--t-fast);
+}
+
+.queueEditBtn:hover {
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+.queueOrderEditRow {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.queueOrderInput {
+  width: 52px;
+  padding: 0.25rem 0.4rem;
+  border: 1.5px solid var(--primary);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  font-weight: 700;
+  outline: none;
+  -moz-appearance: textfield;
+}
+
+.queueOrderInput::-webkit-outer-spin-button,
+.queueOrderInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.queueError {
+  font-size: 0.65rem;
+  color: var(--error, #ef4444);
+}
+
+/* ── Queue toggle ── */
+.queueToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: var(--radius-full);
+  padding: 0.2rem 0.5rem 0.2rem 0.25rem;
+  transition: all var(--t-fast);
+}
+
+.queueToggleOn {
+  color: var(--success, #22c55e);
+}
+
+.queueToggleOn:hover {
+  background: rgba(34,197,94,0.1);
+}
+
+.queueToggleOff {
+  color: var(--text-tertiary);
+}
+
+.queueToggleOff:hover {
+  background: var(--border-light);
+}
+
+.queueToggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .deleteBtn {

@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { revalidatePath } from "next/cache";
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions);
@@ -22,7 +23,10 @@ export async function getTeamStats() {
       },
       deals: true,
     },
-    orderBy: { name: "asc" },
+    orderBy: [
+      { queueOrder: "asc" },
+      { name: "asc" },
+    ],
   });
 
   return agents.map((agent) => {
@@ -38,6 +42,9 @@ export async function getTeamStats() {
       username: agent.username,
       email: agent.email,
       role: agent.role,
+      queueOrder: agent.queueOrder,
+      inAutoQueue: agent.inAutoQueue,
+      lastLeadReceivedAt: agent.lastLeadReceivedAt?.toISOString() ?? null,
       activeLeads: agent.leads.length,
       hotLeads,
       closedWon,
@@ -83,4 +90,20 @@ export async function getAgentDetail(agentId: string) {
     totalDeals: agent.deals.length,
     totalCommission,
   };
+}
+
+/** Updates queue settings (order and/or active status) for a specific agent. */
+export async function updateAgentQueueSettings(
+  agentId: string,
+  data: { queueOrder?: number; inAutoQueue?: boolean }
+) {
+  await requireAdmin();
+
+  await prisma.user.update({
+    where: { id: agentId },
+    data,
+  });
+
+  revalidatePath("/admin/team");
+  return { success: true };
 }

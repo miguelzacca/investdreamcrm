@@ -93,35 +93,61 @@ export async function adminCreateLeadForAgent(
 }
 
 /**
- * Admin creates a lead via round-robin queue.
- * The lead is assigned to the AGENT with the fewest active leads.
- * Ties broken alphabetically by name for a stable, predictable order.
+ * Picks the next agent in the sequential round-robin queue.
+ * Priority:
+ *  1. Only agents with inAutoQueue = true are considered.
+ *  2. Agents that have NEVER received a lead go first, ordered by queueOrder ASC.
+ *  3. Among agents who have received leads, the one whose lastLeadReceivedAt
+ *     is the oldest goes next (strict sequential rotation).
+ *  4. Ties broken by queueOrder ASC.
  */
-export async function adminCreateLeadRoundRobin(data: LeadInput) {
-  await requireAdmin();
-
-  // Fetch all agents and their active lead counts in one query
+async function pickNextQueueAgent() {
   const agents = await prisma.user.findMany({
-    where: { role: "AGENT" },
+    where: { role: "AGENT", inAutoQueue: true },
     select: {
       id: true,
       name: true,
       email: true,
-      _count: {
-        select: { leads: { where: { isArchived: false } } },
-      },
+      queueOrder: true,
+      lastLeadReceivedAt: true,
     },
-    orderBy: { name: "asc" },
   });
 
-  if (agents.length === 0) {
-    throw new Error("Nenhum corretor disponível para receber leads.");
+  if (agents.length === 0) return null;
+
+  // Sort: null lastLeadReceivedAt (never received) → first, ordered by queueOrder
+  // Then by lastLeadReceivedAt ASC (oldest first), ties broken by queueOrder ASC
+  const sorted = [...agents].sort((a, b) => {
+    const aNull = a.lastLeadReceivedAt === null;
+    const bNull = b.lastLeadReceivedAt === null;
+
+    if (aNull && bNull) return a.queueOrder - b.queueOrder;
+    if (aNull) return -1;
+    if (bNull) return 1;
+
+    const timeDiff =
+      a.lastLeadReceivedAt!.getTime() - b.lastLeadReceivedAt!.getTime();
+    if (timeDiff !== 0) return timeDiff;
+    return a.queueOrder - b.queueOrder;
+  });
+
+  return sorted[0];
+}
+
+/**
+ * Admin creates a lead via sequential round-robin queue.
+ * Passes to the next agent in order regardless of how many active leads they have.
+ */
+export async function adminCreateLeadRoundRobin(data: LeadInput) {
+  await requireAdmin();
+
+  const target = await pickNextQueueAgent();
+
+  if (!target) {
+    throw new Error("Nenhum corretor disponível na fila automática.");
   }
 
-  // Pick agent with the least active leads (stable sort: name is already alphabetical)
-  const target = agents.reduce((min, a) =>
-    a._count.leads < min._count.leads ? a : min
-  );
+  const now = new Date();
 
   const lead = await prisma.lead.create({
     data: {
@@ -129,6 +155,12 @@ export async function adminCreateLeadRoundRobin(data: LeadInput) {
       agentId: target.id,
       funnelStage: "NEW_LEAD",
     },
+  });
+
+  // Advance the queue pointer
+  await prisma.user.update({
+    where: { id: target.id },
+    data: { lastLeadReceivedAt: now },
   });
 
   // Notifica o corretor
@@ -156,30 +188,12 @@ export async function adminCreateLeadRoundRobin(data: LeadInput) {
 export async function getNextRoundRobinAgent() {
   await requireAdmin();
 
-  const agents = await prisma.user.findMany({
-    where: { role: "AGENT" },
-    select: {
-      id: true,
-      name: true,
-      username: true,
-      _count: {
-        select: { leads: { where: { isArchived: false } } },
-      },
-    },
-    orderBy: { name: "asc" },
-  });
-
-  if (agents.length === 0) return null;
-
-  const target = agents.reduce((min, a) =>
-    a._count.leads < min._count.leads ? a : min
-  );
+  const target = await pickNextQueueAgent();
+  if (!target) return null;
 
   return {
     id: target.id,
     name: target.name,
-    username: target.username,
-    activeLeads: target._count.leads,
   };
 }
 

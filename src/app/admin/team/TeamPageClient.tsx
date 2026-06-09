@@ -3,8 +3,12 @@
 import React, { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Mail, Pencil, X, Check, AlertCircle, Trash2 } from "lucide-react";
+import {
+  Mail, Pencil, X, Check, AlertCircle, Trash2,
+  GripVertical, ToggleLeft, ToggleRight,
+} from "lucide-react";
 import { Card } from "@/components/ui/Card";
+import { updateAgentQueueSettings } from "./actions";
 import styles from "./TeamPage.module.css";
 import editStyles from "./EditEmail.module.css";
 
@@ -14,6 +18,9 @@ type Agent = {
   username: string;
   email: string | null;
   role: string;
+  queueOrder: number;
+  inAutoQueue: boolean;
+  lastLeadReceivedAt: string | null;
   activeLeads: number;
   hotLeads: number;
   closedWon: number;
@@ -24,6 +31,7 @@ type Agent = {
 const formatCurrency = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
+/* ─── Email edit cell ────────────────────────────────────────────── */
 function EmailEditCell({ agent }: { agent: Agent }) {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(agent.email ?? "");
@@ -110,26 +118,112 @@ function EmailEditCell({ agent }: { agent: Agent }) {
           </div>
         )}
       </div>
-      <button
-        className={editStyles.saveBtn}
-        onClick={handleSave}
-        disabled={isPending}
-        title="Salvar"
-      >
+      <button className={editStyles.saveBtn} onClick={handleSave} disabled={isPending} title="Salvar">
         <Check size={14} />
       </button>
-      <button
-        className={editStyles.cancelBtn}
-        onClick={handleCancel}
-        disabled={isPending}
-        title="Cancelar"
-      >
+      <button className={editStyles.cancelBtn} onClick={handleCancel} disabled={isPending} title="Cancelar">
         <X size={14} />
       </button>
     </div>
   );
 }
 
+/* ─── Queue order edit cell ─────────────────────────────────────── */
+function QueueOrderCell({ agent }: { agent: Agent }) {
+  const router = useRouter();
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(String(agent.queueOrder));
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState("");
+
+  const handleSave = () => {
+    const num = parseInt(value, 10);
+    if (isNaN(num) || num < 0) {
+      setError("Número inválido");
+      return;
+    }
+    setError("");
+    startTransition(async () => {
+      await updateAgentQueueSettings(agent.id, { queueOrder: num });
+      setEditing(false);
+      router.refresh();
+    });
+  };
+
+  const handleCancel = () => {
+    setValue(String(agent.queueOrder));
+    setError("");
+    setEditing(false);
+  };
+
+  if (!editing) {
+    return (
+      <div className={styles.queueOrderCell}>
+        <span className={styles.queueOrderBadge}>{agent.queueOrder}</span>
+        <button
+          className={styles.queueEditBtn}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setEditing(true); }}
+          title="Editar posição na fila"
+        >
+          <Pencil size={12} />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.queueOrderEditRow} onClick={(e) => e.preventDefault()}>
+      <input
+        className={styles.queueOrderInput}
+        type="number"
+        min="0"
+        value={value}
+        onChange={(e) => { setValue(e.target.value); setError(""); }}
+        disabled={isPending}
+        autoFocus
+        onKeyDown={(e) => {
+          if (e.key === "Enter") handleSave();
+          if (e.key === "Escape") handleCancel();
+        }}
+      />
+      {error && <span className={styles.queueError}>{error}</span>}
+      <button className={editStyles.saveBtn} onClick={handleSave} disabled={isPending} title="Salvar"><Check size={14} /></button>
+      <button className={editStyles.cancelBtn} onClick={handleCancel} disabled={isPending} title="Cancelar"><X size={14} /></button>
+    </div>
+  );
+}
+
+/* ─── In-queue toggle ────────────────────────────────────────────── */
+function InQueueToggle({ agent }: { agent: Agent }) {
+  const router = useRouter();
+  const [active, setActive] = useState(agent.inAutoQueue);
+  const [isPending, startTransition] = useTransition();
+
+  const toggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const next = !active;
+    setActive(next);
+    startTransition(async () => {
+      await updateAgentQueueSettings(agent.id, { inAutoQueue: next });
+      router.refresh();
+    });
+  };
+
+  return (
+    <button
+      className={`${styles.queueToggle} ${active ? styles.queueToggleOn : styles.queueToggleOff}`}
+      onClick={toggle}
+      disabled={isPending}
+      title={active ? "Clique para remover da fila" : "Clique para adicionar à fila"}
+    >
+      {active ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
+      <span>{active ? "Na fila" : "Pausado"}</span>
+    </button>
+  );
+}
+
+/* ─── Delete button ─────────────────────────────────────────────── */
 function DeleteAgentButton({ agent }: { agent: Agent }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
@@ -145,7 +239,7 @@ function DeleteAgentButton({ agent }: { agent: Agent }) {
       } else {
         router.refresh();
       }
-    } catch (err) {
+    } catch {
       alert("Erro de conexão.");
     } finally {
       setIsDeleting(false);
@@ -153,9 +247,9 @@ function DeleteAgentButton({ agent }: { agent: Agent }) {
   };
 
   return (
-    <button 
-      className={styles.deleteBtn} 
-      onClick={handleDelete} 
+    <button
+      className={styles.deleteBtn}
+      onClick={handleDelete}
       disabled={isDeleting}
       title="Apagar usuário"
     >
@@ -164,14 +258,20 @@ function DeleteAgentButton({ agent }: { agent: Agent }) {
   );
 }
 
+/* ─── Main component ─────────────────────────────────────────────── */
 export function TeamPageClient({ team }: { team: Agent[] }) {
   const totalLeads = team.reduce((s, a) => s + a.activeLeads, 0);
   const totalDeals = team.reduce((s, a) => s + a.totalDeals, 0);
   const totalCommission = team.reduce((s, a) => s + a.totalCommission, 0);
 
+  // Agents sorted by queueOrder for the queue preview panel
+  const queueAgents = team
+    .filter((a) => a.role === "AGENT")
+    .sort((a, b) => a.queueOrder - b.queueOrder);
+
   return (
     <>
-      {/* Summary */}
+      {/* Summary cards */}
       <div className={styles.summaryGrid}>
         <div className={styles.summaryCard}>
           <span className={styles.summaryIcon}>👥</span>
@@ -195,6 +295,46 @@ export function TeamPageClient({ team }: { team: Agent[] }) {
         </div>
       </div>
 
+      {/* Queue preview panel */}
+      {queueAgents.length > 0 && (
+        <Card>
+          <div className={styles.queuePanel}>
+            <div className={styles.queuePanelHeader}>
+              <span className={styles.queuePanelTitle}>🔄 Fila Automática</span>
+              <span className={styles.queuePanelHint}>
+                A ordem abaixo é a sequência de distribuição. Use o número de posição na tabela para reordenar.
+              </span>
+            </div>
+            <div className={styles.queueList}>
+              {queueAgents.map((a, idx) => (
+                <div
+                  key={a.id}
+                  className={`${styles.queueItem} ${!a.inAutoQueue ? styles.queueItemPaused : ""}`}
+                >
+                  <span className={styles.queuePos}>{idx + 1}º</span>
+                  <GripVertical size={14} className={styles.queueGrip} />
+                  <span className={styles.queueName}>{a.name}</span>
+                  {!a.inAutoQueue && (
+                    <span className={styles.pausedBadge}>Pausado</span>
+                  )}
+                  {a.lastLeadReceivedAt && (
+                    <span className={styles.queueLastLead}>
+                      Último lead:{" "}
+                      {new Date(a.lastLeadReceivedAt).toLocaleDateString("pt-BR", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </Card>
+      )}
+
       {/* Actions bar */}
       <div className={styles.toolbar}>
         <h2 className={styles.sectionTitle}>Agentes</h2>
@@ -211,6 +351,8 @@ export function TeamPageClient({ team }: { team: Agent[] }) {
             <span>Usuário</span>
             <span>Email de Notificação</span>
             <span>Perfil</span>
+            <span>Posição Fila</span>
+            <span>Na Fila</span>
             <span>Leads Ativos</span>
             <span>🔥 Quentes</span>
             <span>Fechados</span>
@@ -229,6 +371,17 @@ export function TeamPageClient({ team }: { team: Agent[] }) {
                   {agent.role === "ADMIN" ? "Admin" : "Corretor"}
                 </span>
               </span>
+              {agent.role === "AGENT" ? (
+                <>
+                  <QueueOrderCell agent={agent} />
+                  <InQueueToggle agent={agent} />
+                </>
+              ) : (
+                <>
+                  <span className={styles.naCell}>—</span>
+                  <span className={styles.naCell}>—</span>
+                </>
+              )}
               <span className={styles.num}>{agent.activeLeads}</span>
               <span className={styles.num}>{agent.hotLeads}</span>
               <span className={styles.num}>{agent.closedWon}</span>
