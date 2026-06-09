@@ -20,6 +20,7 @@ export default function NewUserPage() {
   const [form, setForm] = useState({
     name: '',
     username: '',
+    email: '',
     password: '',
     confirmPassword: '',
     role: 'AGENT',
@@ -53,6 +54,7 @@ export default function NewUserPage() {
           body: JSON.stringify({
             name: form.name,
             username: form.username,
+            email: form.email || undefined,
             password: form.password,
             role: form.role,
           }),
@@ -66,7 +68,7 @@ export default function NewUserPage() {
         }
 
         setSuccess(`Agente "${data.name}" criado com sucesso!`);
-        setForm({ name: '', username: '', password: '', confirmPassword: '', role: 'AGENT' });
+        setForm({ name: '', username: '', email: '', password: '', confirmPassword: '', role: 'AGENT' });
         setTimeout(() => router.push('/admin/team'), 1500);
       } catch {
         setError('Erro de conexão. Tente novamente.');
@@ -110,6 +112,15 @@ export default function NewUserPage() {
                     disabled={isPending}
                   />
                 </div>
+
+                <Input
+                  label="Email para notificações"
+                  type="email"
+                  placeholder="Ex: ana.souza@imobiliaria.com"
+                  value={form.email}
+                  onChange={(e) => handleChange('email', e.target.value)}
+                  disabled={isPending}
+                />
 
                 <div className={styles.row}>
                   <Input

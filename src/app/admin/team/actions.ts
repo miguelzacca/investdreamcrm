@@ -36,6 +36,7 @@ export async function getTeamStats() {
       id: agent.id,
       name: agent.name,
       username: agent.username,
+      email: agent.email,
       role: agent.role,
       activeLeads: agent.leads.length,
       hotLeads,

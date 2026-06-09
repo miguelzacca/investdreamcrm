@@ -69,9 +69,9 @@
   flex-direction: column;
 }
 
-.tableHeader {
+.tableHeaderWithEmail {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 0.8fr 0.8fr 0.8fr 0.8fr 1.2fr;
+  grid-template-columns: 1.5fr 1fr 1.5fr 0.8fr 0.8fr 0.8fr 0.8fr 1.2fr;
   gap: 1rem;
   padding: 0.75rem 1.25rem;
   font-size: 0.72rem;
@@ -82,9 +82,9 @@
   border-bottom: 1px solid var(--border-light);
 }
 
-.tableRow {
+.tableRowWithEmail {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 0.8fr 0.8fr 0.8fr 0.8fr 1.2fr;
+  grid-template-columns: 1.5fr 1fr 1.5fr 0.8fr 0.8fr 0.8fr 0.8fr 1.2fr;
   gap: 1rem;
   padding: 1rem 1.25rem;
   align-items: center;
@@ -92,16 +92,8 @@
   transition: background-color var(--transition-fast);
 }
 
-.tableRow:last-child { border-bottom: none; }
-
-.tableRow:hover { background-color: var(--bg-main); }
-
-/* tableRow can now be an <a> tag (Link) */
-.tableRow {
-  text-decoration: none;
-  color: inherit;
-  cursor: pointer;
-}
+.tableRowWithEmail:last-child { border-bottom: none; }
+.tableRowWithEmail:hover { background-color: var(--bg-main); }
 
 .agentName {
   font-weight: 600;

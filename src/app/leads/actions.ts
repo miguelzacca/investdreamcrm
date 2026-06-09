@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { FunnelStage, Temperature } from "@prisma/client";
+import { sendNewLeadEmail } from "@/lib/mailer";
 
 export async function getActiveLeads() {
   const session = await getServerSession(authOptions);
@@ -57,13 +58,31 @@ export async function createLead(data: {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) throw new Error("Não autorizado");
 
-  await prisma.lead.create({
+  const lead = await prisma.lead.create({
     data: {
       ...data,
       agentId: session.user.id,
       funnelStage: "NEW_LEAD",
     }
   });
+
+  // Fire-and-forget email notification
+  prisma.user
+    .findUnique({ where: { id: session.user.id }, select: { email: true, name: true } })
+    .then((agent) => {
+      if (agent?.email) {
+        sendNewLeadEmail({
+          agentEmail: agent.email,
+          agentName: agent.name,
+          leadName: lead.name,
+          leadWhatsApp: lead.whatsApp,
+          leadInterest: lead.interest,
+          leadSource: lead.source,
+          isFollowUp: false,
+        });
+      }
+    })
+    .catch((err) => console.error("[createLead] email error:", err));
 
   revalidatePath("/leads");
   revalidatePath("/dashboard");
@@ -97,10 +116,24 @@ export async function updateLeadStage(leadId: string, newStage: FunnelStage) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) throw new Error("Não autorizado");
 
-  await prisma.lead.update({
+  const lead = await prisma.lead.update({
     where: { id: leadId },
-    data: { funnelStage: newStage }
+    data: { funnelStage: newStage },
+    include: { agent: { select: { email: true, name: true } } },
   });
+
+  // Send notification when a lead is moved (back) to NEW_LEAD
+  if (newStage === "NEW_LEAD" && lead.agent.email) {
+    sendNewLeadEmail({
+      agentEmail: lead.agent.email,
+      agentName: lead.agent.name,
+      leadName: lead.name,
+      leadWhatsApp: lead.whatsApp,
+      leadInterest: lead.interest,
+      leadSource: lead.source,
+      isFollowUp: lead.isFollowUp,
+    }).catch((err) => console.error("[updateLeadStage] email error:", err));
+  }
 
   revalidatePath("/leads");
 }

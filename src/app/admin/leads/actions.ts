@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { Temperature } from "@prisma/client";
+import { sendNewLeadEmail } from "@/lib/mailer";
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions);
@@ -58,13 +59,32 @@ export async function adminCreateLeadForAgent(
 
   if (!agentId) throw new Error("Corretor não informado.");
 
-  await prisma.lead.create({
+  const lead = await prisma.lead.create({
     data: {
       ...data,
       agentId,
       funnelStage: "NEW_LEAD",
     },
   });
+
+  // Notifica o corretor
+  prisma.user
+    .findUnique({ where: { id: agentId }, select: { email: true, name: true } })
+    .then((agent) => {
+      if (agent?.email) {
+        sendNewLeadEmail({
+          agentEmail: agent.email,
+          agentName: agent.name,
+          leadName: lead.name,
+          leadWhatsApp: lead.whatsApp,
+          leadInterest: lead.interest,
+          leadSource: lead.source,
+          isFollowUp: false,
+        }).catch((err) => console.error("[adminCreateLeadForAgent] email send error:", err));
+      }
+    })
+    .catch((err) => console.error("[adminCreateLeadForAgent] user fetch error:", err));
+
 
   revalidatePath("/admin/leads");
   revalidatePath("/admin/team");
@@ -86,6 +106,7 @@ export async function adminCreateLeadRoundRobin(data: LeadInput) {
     select: {
       id: true,
       name: true,
+      email: true,
       _count: {
         select: { leads: { where: { isArchived: false } } },
       },
@@ -102,13 +123,26 @@ export async function adminCreateLeadRoundRobin(data: LeadInput) {
     a._count.leads < min._count.leads ? a : min
   );
 
-  await prisma.lead.create({
+  const lead = await prisma.lead.create({
     data: {
       ...data,
       agentId: target.id,
       funnelStage: "NEW_LEAD",
     },
   });
+
+  // Notifica o corretor
+  if (target.email) {
+    sendNewLeadEmail({
+      agentEmail: target.email,
+      agentName: target.name,
+      leadName: lead.name,
+      leadWhatsApp: lead.whatsApp,
+      leadInterest: lead.interest,
+      leadSource: lead.source,
+      isFollowUp: false,
+    }).catch((err) => console.error("[adminCreateLeadRoundRobin] email send error:", err));
+  }
 
   revalidatePath("/admin/leads");
   revalidatePath("/admin/team");

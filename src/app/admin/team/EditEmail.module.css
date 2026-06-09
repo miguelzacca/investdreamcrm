@@ -1,0 +1,126 @@
+/* Inline email editor for team table */
+
+.emailCell {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.emailIcon {
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.emailValue {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.noEmail {
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+
+.editBtn {
+  background: none;
+  border: none;
+  padding: 0.2rem;
+  cursor: pointer;
+  color: var(--text-tertiary);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+/* Show edit button on row hover */
+.emailCell:hover .editBtn,
+.editBtn:focus {
+  opacity: 1;
+  color: var(--primary);
+}
+
+/* Edit mode */
+.editRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.inputWrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.emailInput {
+  width: 100%;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.78rem;
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--primary-light);
+}
+
+.errorHint {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.7rem;
+  color: var(--danger, #ef4444);
+  margin-top: 0.2rem;
+}
+
+.saveBtn,
+.cancelBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  transition: background-color 0.15s;
+}
+
+.saveBtn {
+  background: var(--success, #22c55e);
+  color: white;
+}
+
+.saveBtn:hover:not(:disabled) {
+  background: #16a34a;
+}
+
+.cancelBtn {
+  background: var(--bg-main);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.cancelBtn:hover:not(:disabled) {
+  background: var(--border-light);
+}
+
+.saveBtn:disabled,
+.cancelBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

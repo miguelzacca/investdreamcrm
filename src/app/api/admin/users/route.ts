@@ -4,6 +4,20 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
+export async function GET() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id || session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  }
+
+  const users = await prisma.user.findMany({
+    select: { id: true, name: true, username: true, email: true, role: true },
+    orderBy: { name: "asc" },
+  });
+
+  return NextResponse.json(users);
+}
+
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
 
@@ -13,10 +27,10 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { name, username, password, role } = body;
+    const { name, username, password, role, email } = body;
 
     if (!name || !username || !password) {
-      return NextResponse.json({ error: "Campos obrigatórios ausentes." }, { status: 400 });
+      return NextResponse.json({ error: "Campos obrigatórios ausentes (nome, usuário, senha)." }, { status: 400 });
     }
 
     if (password.length < 6) {
@@ -35,11 +49,12 @@ export async function POST(req: NextRequest) {
         name,
         username,
         passwordHash,
+        email: email ?? null,
         role: role === "ADMIN" ? "ADMIN" : "AGENT",
       },
     });
 
-    return NextResponse.json({ id: user.id, name: user.name, username: user.username });
+    return NextResponse.json({ id: user.id, name: user.name, username: user.username, email: user.email });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "Erro interno." }, { status: 500 });
