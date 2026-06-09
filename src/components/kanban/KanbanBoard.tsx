@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Lead, FunnelStage } from '@prisma/client';
 import { updateLeadStage } from '@/app/leads/actions';
 import { TemperatureBadge } from '@/components/ui/Badge';
+import { useEffect } from 'react';
 import styles from './KanbanBoard.module.css';
 
 interface KanbanBoardProps {
@@ -23,6 +24,10 @@ const STAGES: { id: FunnelStage; title: string; color: string }[] = [
 export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
   const [leads, setLeads] = useState(initialLeads);
   const [draggedLeadId, setDraggedLeadId] = useState<string | null>(null);
+  
+  useEffect(() => {
+    setLeads(initialLeads);
+  }, [initialLeads]);
   const [dragOverStage, setDragOverStage] = useState<FunnelStage | null>(null);
 
   const handleDragStart = (e: React.DragEvent, id: string) => {

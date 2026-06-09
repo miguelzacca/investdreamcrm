@@ -2,6 +2,7 @@
 
 import React, { useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Lead } from "@prisma/client";
 import { AdminNewLeadModal } from "@/components/leads/AdminNewLeadModal";
 import styles from "./AdminLeadsPage.module.css";
@@ -45,38 +46,25 @@ export default function AdminLeadsClient({
   initialArchived,
   initialAgentId,
 }: AdminLeadsClientProps) {
-  const [leads, setLeads] = useState(initialLeads);
-  const [showArchived, setShowArchived] = useState(initialArchived);
-  const [agentId, setAgentId] = useState(initialAgentId);
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isAddLeadOpen, setIsAddLeadOpen] = useState(false);
 
   const applyFilters = (newAgentId: string, newArchived: boolean) => {
-    startTransition(async () => {
+    startTransition(() => {
       const params = new URLSearchParams();
       if (newAgentId) params.set("agentId", newAgentId);
       if (newArchived) params.set("archived", "1");
-
-      // Fetch via server-action re-fetch approach: navigate with search params
-      // We do a client-side fetch of the page data
-      const res = await fetch(`/admin/leads/data?${params.toString()}`);
-      if (res.ok) {
-        const data: LeadWithAgent[] = await res.json();
-        setLeads(data);
-      }
+      router.push(`?${params.toString()}`);
     });
   };
 
   const handleAgentChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const val = e.target.value;
-    setAgentId(val);
-    applyFilters(val, showArchived);
+    applyFilters(e.target.value, initialArchived);
   };
 
   const handleArchivedToggle = () => {
-    const next = !showArchived;
-    setShowArchived(next);
-    applyFilters(agentId, next);
+    applyFilters(initialAgentId, !initialArchived);
   };
 
   const formatDate = (d: Date | string) =>
@@ -97,7 +85,7 @@ export default function AdminLeadsClient({
           <select
             id="filter-agent"
             className={styles.filterSelect}
-            value={agentId}
+            value={initialAgentId}
             onChange={handleAgentChange}
             disabled={isPending}
           >
@@ -112,15 +100,15 @@ export default function AdminLeadsClient({
 
         <button
           id="toggle-archived"
-          className={`${styles.toggleBtn} ${showArchived ? styles.toggleActive : ""}`}
+          className={`${styles.toggleBtn} ${initialArchived ? styles.toggleActive : ""}`}
           onClick={handleArchivedToggle}
           disabled={isPending}
         >
-          {showArchived ? "📦 Arquivados" : "✅ Ativos"}
+          {initialArchived ? "📦 Arquivados" : "✅ Ativos"}
         </button>
 
         <span className={styles.countBadge}>
-          {isPending ? "..." : `${leads.length} lead${leads.length !== 1 ? "s" : ""}`}
+          {isPending ? "..." : `${initialLeads.length} lead${initialLeads.length !== 1 ? "s" : ""}`}
         </span>
 
         <button
@@ -148,20 +136,20 @@ export default function AdminLeadsClient({
           <span>Temp.</span>
           <span>Corretor</span>
           <span>Data</span>
-          {showArchived && <span>Motivo</span>}
+          {initialArchived && <span>Motivo</span>}
         </div>
 
-        {leads.length === 0 && (
+        {initialLeads.length === 0 && (
           <div className={styles.empty}>
             {isPending
               ? "Carregando..."
-              : showArchived
+              : initialArchived
               ? "Nenhum lead arquivado encontrado."
               : "Nenhum lead ativo encontrado."}
           </div>
         )}
 
-        {leads.map((lead) => (
+        {initialLeads.map((lead) => (
           <Link
             key={lead.id}
             href={`/leads/${lead.id}`}
@@ -194,7 +182,7 @@ export default function AdminLeadsClient({
               <span className={styles.agentUser}>@{lead.agent.username}</span>
             </span>
             <span className={styles.date}>{formatDate(lead.createdAt)}</span>
-            {showArchived && (
+            {initialArchived && (
               <span className={styles.archiveReason}>
                 {lead.archiveReason ?? "—"}
               </span>
