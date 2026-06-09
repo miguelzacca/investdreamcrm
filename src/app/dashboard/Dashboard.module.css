@@ -82,7 +82,7 @@
 /* Summary Row */
 .summaryRow {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 1rem;
 }
 
@@ -200,6 +200,34 @@
 .viewLink:hover {
   background: var(--primary);
   color: white;
+}
+
+/* Ranking table */
+.rankingHeader {
+  grid-template-columns: 2rem 2fr 1fr 1fr 1.5fr !important;
+}
+
+.rankingRow {
+  grid-template-columns: 2rem 2fr 1fr 1fr 1.5fr !important;
+}
+
+.adminLeadHeader {
+  grid-template-columns: 2fr 1.5fr 1fr 1.5fr auto !important;
+}
+
+.adminLeadRow {
+  grid-template-columns: 2fr 1.5fr 1fr 1.5fr auto !important;
+}
+
+.rankPosition {
+  font-size: 1rem;
+  text-align: center;
+}
+
+.rankStat {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 /* Empty state */
