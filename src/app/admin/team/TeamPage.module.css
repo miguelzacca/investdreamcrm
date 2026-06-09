@@ -112,7 +112,7 @@
 
 .tableHeaderWithEmail {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1.5fr 0.8fr 0.8fr 0.8fr 0.8fr 1.2fr;
+  grid-template-columns: 1.5fr 1fr 1.5fr 0.8fr 0.8fr 0.8fr 0.8fr 1.2fr 0.4fr;
   gap: 1rem;
   padding: 0.625rem 1.25rem;
   font-size: 0.68rem;
@@ -127,7 +127,7 @@
 
 .tableRowWithEmail {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1.5fr 0.8fr 0.8fr 0.8fr 0.8fr 1.2fr;
+  grid-template-columns: 1.5fr 1fr 1.5fr 0.8fr 0.8fr 0.8fr 0.8fr 1.2fr 0.4fr;
   gap: 1rem;
   padding: 0.875rem 1.25rem;
   align-items: center;
@@ -194,4 +194,28 @@
   padding: 3.5rem;
   color: var(--text-secondary);
   font-size: 0.875rem;
+}
+
+.deleteBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--error, #ef4444);
+  border: none;
+  border-radius: var(--radius-md);
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  transition: all var(--t-fast);
+}
+
+.deleteBtn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.1);
+  transform: scale(1.05);
+}
+
+.deleteBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

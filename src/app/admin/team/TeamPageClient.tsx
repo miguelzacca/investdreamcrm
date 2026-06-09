@@ -2,7 +2,8 @@
 
 import React, { useState, useTransition } from "react";
 import Link from "next/link";
-import { Mail, Pencil, X, Check, AlertCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Mail, Pencil, X, Check, AlertCircle, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import styles from "./TeamPage.module.css";
 import editStyles from "./EditEmail.module.css";
@@ -129,6 +130,40 @@ function EmailEditCell({ agent }: { agent: Agent }) {
   );
 }
 
+function DeleteAgentButton({ agent }: { agent: Agent }) {
+  const [isDeleting, setIsDeleting] = useState(false);
+  const router = useRouter();
+
+  const handleDelete = async () => {
+    if (!confirm(`Tem certeza que deseja apagar o usuário ${agent.name}?`)) return;
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/admin/users/${agent.id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || "Erro ao apagar usuário.");
+      } else {
+        router.refresh();
+      }
+    } catch (err) {
+      alert("Erro de conexão.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  return (
+    <button 
+      className={styles.deleteBtn} 
+      onClick={handleDelete} 
+      disabled={isDeleting}
+      title="Apagar usuário"
+    >
+      <Trash2 size={16} />
+    </button>
+  );
+}
+
 export function TeamPageClient({ team }: { team: Agent[] }) {
   const totalLeads = team.reduce((s, a) => s + a.activeLeads, 0);
   const totalDeals = team.reduce((s, a) => s + a.totalDeals, 0);
@@ -180,6 +215,7 @@ export function TeamPageClient({ team }: { team: Agent[] }) {
             <span>🔥 Quentes</span>
             <span>Fechados</span>
             <span>Comissão Total</span>
+            <span></span>
           </div>
           {team.map((agent) => (
             <div key={agent.id} className={styles.tableRowWithEmail}>
@@ -197,6 +233,7 @@ export function TeamPageClient({ team }: { team: Agent[] }) {
               <span className={styles.num}>{agent.hotLeads}</span>
               <span className={styles.num}>{agent.closedWon}</span>
               <span className={styles.commission}>{formatCurrency(agent.totalCommission)}</span>
+              <DeleteAgentButton agent={agent} />
             </div>
           ))}
           {team.length === 0 && (

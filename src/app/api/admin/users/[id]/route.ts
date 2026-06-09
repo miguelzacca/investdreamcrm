@@ -42,3 +42,45 @@ export async function PATCH(
     return NextResponse.json({ error: "Erro ao atualizar usuário." }, { status: 500 });
   }
 }
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id || session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  }
+
+  const { id } = await params;
+
+  if (id === session.user.id) {
+    return NextResponse.json({ error: "Você não pode apagar seu próprio usuário." }, { status: 400 });
+  }
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: { leads: true, deals: true }
+        }
+      }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "Usuário não encontrado." }, { status: 404 });
+    }
+
+    if (user._count.leads > 0 || user._count.deals > 0) {
+      return NextResponse.json({ error: "Não é possível apagar o usuário, pois ele possui leads ou negócios associados. Por favor, reatribua-os primeiro." }, { status: 400 });
+    }
+
+    await prisma.user.delete({ where: { id } });
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ error: "Erro ao apagar usuário." }, { status: 500 });
+  }
+}
