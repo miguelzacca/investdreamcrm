@@ -19,8 +19,15 @@ export async function PATCH(
     const { email } = body;
 
     // Validate email format if provided
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return NextResponse.json({ error: "Email inválido." }, { status: 400 });
+    if (email) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return NextResponse.json({ error: "Email inválido." }, { status: 400 });
+      }
+
+      const existingEmail = await prisma.user.findUnique({ where: { email } });
+      if (existingEmail && existingEmail.id !== id) {
+        return NextResponse.json({ error: "Este email já está em uso por outro usuário." }, { status: 400 });
+      }
     }
 
     const user = await prisma.user.update({

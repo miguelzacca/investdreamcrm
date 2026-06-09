@@ -42,6 +42,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Este nome de usuário já está em uso." }, { status: 400 });
     }
 
+    if (email) {
+      const existingEmail = await prisma.user.findUnique({ where: { email } });
+      if (existingEmail) {
+        return NextResponse.json({ error: "Este email já está em uso." }, { status: 400 });
+      }
+    }
+
     const passwordHash = await bcrypt.hash(password, 10);
 
     const user = await prisma.user.create({
