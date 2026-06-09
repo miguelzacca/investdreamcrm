@@ -34,6 +34,14 @@ const TEMPERATURES = [
   { value: 'HOT', label: '🔥 Quente' },
 ];
 
+const getWhatsAppLink = (phone: string) => {
+  const digits = phone.replace(/\D/g, '');
+  if (digits.length === 10 || digits.length === 11) {
+    return `https://wa.me/55${digits}`;
+  }
+  return `https://wa.me/${digits}`;
+};
+
 interface CloseDealModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -492,7 +500,7 @@ export default function LeadDetailClient({ lead, isAdmin }: { lead: LeadWithDeal
                 <div>
                   <span className={styles.infoLabel}>WhatsApp</span>
                   <a
-                    href={`https://wa.me/${lead.whatsApp.replace(/\D/g, '')}`}
+                    href={getWhatsAppLink(lead.whatsApp)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={styles.infoLink}
