@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft, Phone, Home, Thermometer,
-  Tag, Calendar, CheckCircle2, Archive, Clock
+  Tag, Calendar, CheckCircle2, Archive, Clock, Pencil
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -272,12 +272,79 @@ function FollowUpModal({ isOpen, onClose, onConfirm, isPending }: FollowUpModalP
   );
 }
 
-export default function LeadDetailClient({ lead }: { lead: LeadWithDeals }) {
+interface EditLeadModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  lead: Lead;
+}
+
+function EditLeadModal({ isOpen, onClose, lead }: EditLeadModalProps) {
+  const [isPending, startTransition] = useTransition();
+  const [name, setName] = useState(lead.name);
+  const [whatsApp, setWhatsApp] = useState(lead.whatsApp);
+  const [interest, setInterest] = useState(lead.interest || '');
+  const [source, setSource] = useState(lead.source || '');
+  const router = useRouter();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    startTransition(async () => {
+      await updateLead(lead.id, {
+        name,
+        whatsApp,
+        interest: interest || undefined,
+        source: source || undefined,
+      });
+      onClose();
+      router.refresh();
+    });
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="✏️ Editar Lead">
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <Input
+          label="Nome *"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
+        <Input
+          label="WhatsApp *"
+          value={whatsApp}
+          onChange={(e) => setWhatsApp(e.target.value)}
+          required
+        />
+        <Input
+          label="Interesse"
+          value={interest}
+          onChange={(e) => setInterest(e.target.value)}
+        />
+        <Input
+          label="Origem"
+          value={source}
+          onChange={(e) => setSource(e.target.value)}
+        />
+        <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+          <Button type="button" variant="secondary" onClick={onClose} disabled={isPending}>
+            Cancelar
+          </Button>
+          <Button type="submit" isLoading={isPending}>
+            Salvar
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+export default function LeadDetailClient({ lead, isAdmin }: { lead: LeadWithDeals, isAdmin?: boolean }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isDealModalOpen, setIsDealModalOpen] = useState(false);
   const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
   const [isFollowUpModalOpen, setIsFollowUpModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const handleStageChange = (newStage: string) => {
     startTransition(async () => {
@@ -409,8 +476,14 @@ export default function LeadDetailClient({ lead }: { lead: LeadWithDeals }) {
       <div className={styles.grid}>
         {/* Info Card */}
         <Card className={styles.infoCard}>
-          <CardHeader>
+          <CardHeader style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row' }}>
             <CardTitle>Informações do Lead</CardTitle>
+            {isAdmin && !lead.isArchived && (
+              <Button variant="secondary" size="sm" onClick={() => setIsEditModalOpen(true)} disabled={isPending}>
+                <Pencil size={14} style={{ marginRight: '0.25rem' }} />
+                Editar
+              </Button>
+            )}
           </CardHeader>
           <CardContent>
             <div className={styles.infoList}>
@@ -565,6 +638,12 @@ export default function LeadDetailClient({ lead }: { lead: LeadWithDeals }) {
         onClose={() => setIsFollowUpModalOpen(false)}
         onConfirm={handleFollowUpConfirm}
         isPending={isPending}
+      />
+
+      <EditLeadModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        lead={lead}
       />
     </div>
   );

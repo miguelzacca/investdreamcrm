@@ -1,5 +1,7 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 import { AppLayout } from '@/components/layout/AppLayout';
 import { getLead } from '../actions';
 import LeadDetailClient from './LeadDetailClient';
@@ -11,12 +13,14 @@ interface LeadDetailPageProps {
 export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
   const { id } = await params;
   const lead = await getLead(id);
+  const session = await getServerSession(authOptions);
+  const isAdmin = session?.user?.role === 'ADMIN';
 
   if (!lead) notFound();
 
   return (
     <AppLayout title={lead.name}>
-      <LeadDetailClient lead={lead} />
+      <LeadDetailClient lead={lead} isAdmin={isAdmin} />
     </AppLayout>
   );
 }
