@@ -250,12 +250,17 @@ input, select, textarea { font-family: inherit; }
 }
 
 /* ════════════════════════════════════════════════
-   MOBILE BLOCKER
+   MOBILE HELPERS & BLOCKER
 ════════════════════════════════════════════════ */
+.desktop-only { display: block; }
+.mobile-only { display: none; }
 .mobile-blocker { display: none; }
-.app-wrapper    { display: block; }
+.app-wrapper { display: block; }
 
 @media (max-width: 768px) {
+  .desktop-only { display: none !important; }
+  .mobile-only { display: block !important; }
+
   .mobile-blocker {
     display: flex;
     flex-direction: column;
@@ -271,7 +276,6 @@ input, select, textarea { font-family: inherit; }
     inset: 0;
     z-index: 99999;
   }
-  .app-wrapper { display: none !important; }
 }
 
 /* ════════════════════════════════════════════════
