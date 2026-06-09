@@ -52,6 +52,8 @@ model Lead {
   funnelStage  FunnelStage @default(NEW_LEAD)
   isArchived    Boolean     @default(false)
   archiveReason String?
+  isFollowUp    Boolean     @default(false)
+  followUpDate  DateTime?
   createdAt     DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
   

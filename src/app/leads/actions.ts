@@ -10,10 +10,17 @@ export async function getActiveLeads() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) throw new Error("Não autorizado");
 
+  const now = new Date();
+
   const leads = await prisma.lead.findMany({
     where: {
       agentId: session.user.id,
       isArchived: false,
+      // Exclude follow-up leads whose date is still in the future
+      OR: [
+        { isFollowUp: false },
+        { isFollowUp: true, followUpDate: { lte: now } },
+      ],
     },
     orderBy: { createdAt: 'desc' }
   });
@@ -108,6 +115,24 @@ export async function archiveLead(leadId: string, reason: string) {
   });
 
   revalidatePath("/leads");
+  revalidatePath("/dashboard");
+}
+
+export async function scheduleFollowUp(leadId: string, followUpDate: Date) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) throw new Error("Não autorizado");
+
+  await prisma.lead.update({
+    where: { id: leadId, agentId: session.user.id },
+    data: {
+      isFollowUp: true,
+      followUpDate,
+      funnelStage: "NEW_LEAD",
+    },
+  });
+
+  revalidatePath("/leads");
+  revalidatePath(`/leads/${leadId}`);
   revalidatePath("/dashboard");
 }
 

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft, Phone, Home, Thermometer,
-  Tag, Calendar, CheckCircle2, Archive
+  Tag, Calendar, CheckCircle2, Archive, Clock
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -15,7 +15,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { TemperatureBadge, StageBadge } from '@/components/ui/Badge';
-import { updateLead, archiveLead, createDeal } from '../actions';
+import { updateLead, archiveLead, createDeal, scheduleFollowUp } from '../actions';
 import styles from './LeadDetailClient.module.css';
 
 type LeadWithDeals = Lead & { deals: Deal[] };
@@ -209,11 +209,76 @@ function ArchiveModal({ isOpen, onClose, onConfirm, isPending }: ArchiveModalPro
   );
 }
 
+interface FollowUpModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: (date: Date) => void;
+  isPending: boolean;
+}
+
+function FollowUpModal({ isOpen, onClose, onConfirm, isPending }: FollowUpModalProps) {
+  // Default date = tomorrow
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+  const [dateStr, setDateStr] = useState(tomorrowStr);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!dateStr) return;
+    onConfirm(new Date(dateStr + 'T00:00:00'));
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="🔁 Agendar Follow-up">
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', margin: 0 }}>
+          O lead será removido do kanban e voltará automaticamente para{' '}
+          <strong>Novo Lead</strong> na data selecionada.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
+          <label style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+            Data do follow-up *
+          </label>
+          <input
+            type="date"
+            value={dateStr}
+            min={tomorrowStr}
+            onChange={(e) => setDateStr(e.target.value)}
+            required
+            style={{
+              padding: '0.5rem 0.75rem',
+              borderRadius: 'var(--radius-md)',
+              border: '1px solid var(--border)',
+              background: 'var(--bg-input, var(--bg-card))',
+              color: 'var(--text-primary)',
+              fontSize: '0.9375rem',
+              outline: 'none',
+              colorScheme: 'dark',
+            }}
+          />
+        </div>
+        <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+          <Button type="button" variant="secondary" onClick={onClose} disabled={isPending}>
+            Cancelar
+          </Button>
+          <Button type="submit" isLoading={isPending} disabled={!dateStr}>
+            <Clock size={14} style={{ marginRight: '0.25rem' }} />
+            Confirmar Follow-up
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
 export default function LeadDetailClient({ lead }: { lead: LeadWithDeals }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isDealModalOpen, setIsDealModalOpen] = useState(false);
   const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
+  const [isFollowUpModalOpen, setIsFollowUpModalOpen] = useState(false);
 
   const handleStageChange = (newStage: string) => {
     startTransition(async () => {
@@ -232,6 +297,13 @@ export default function LeadDetailClient({ lead }: { lead: LeadWithDeals }) {
   const handleArchiveConfirm = (reason: string) => {
     startTransition(async () => {
       await archiveLead(lead.id, reason);
+      router.push('/leads');
+    });
+  };
+
+  const handleFollowUpConfirm = (date: Date) => {
+    startTransition(async () => {
+      await scheduleFollowUp(lead.id, date);
       router.push('/leads');
     });
   };
@@ -257,6 +329,17 @@ export default function LeadDetailClient({ lead }: { lead: LeadWithDeals }) {
         </Link>
 
         <div className={styles.actions}>
+          {!lead.isArchived && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setIsFollowUpModalOpen(true)}
+              disabled={isPending}
+            >
+              <Clock size={14} style={{ marginRight: '0.25rem' }} />
+              Follow-up
+            </Button>
+          )}
           {!lead.isArchived && (
             <Button
               variant="danger"
@@ -298,6 +381,29 @@ export default function LeadDetailClient({ lead }: { lead: LeadWithDeals }) {
           <Archive size={15} />
           <strong>Lead arquivado.</strong>
           {lead.archiveReason && <span>Motivo: {lead.archiveReason}</span>}
+        </div>
+      )}
+
+      {/* Follow-up banner */}
+      {!lead.isArchived && lead.isFollowUp && lead.followUpDate && (
+        <div style={{
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border)',
+          borderLeft: '3px solid #3b82f6',
+          borderRadius: 'var(--radius-md)',
+          padding: '0.75rem 1rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          fontSize: '0.875rem',
+          color: 'var(--text-secondary)',
+        }}>
+          <Clock size={15} style={{ color: '#3b82f6' }} />
+          <strong style={{ color: '#3b82f6' }}>Follow-up agendado.</strong>
+          <span>
+            Este lead voltará para o kanban em{' '}
+            <strong>{new Date(lead.followUpDate).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}</strong>.
+          </span>
         </div>
       )}
 
@@ -452,6 +558,13 @@ export default function LeadDetailClient({ lead }: { lead: LeadWithDeals }) {
         isOpen={isArchiveModalOpen}
         onClose={() => setIsArchiveModalOpen(false)}
         onConfirm={handleArchiveConfirm}
+        isPending={isPending}
+      />
+
+      <FollowUpModal
+        isOpen={isFollowUpModalOpen}
+        onClose={() => setIsFollowUpModalOpen(false)}
+        onConfirm={handleFollowUpConfirm}
         isPending={isPending}
       />
     </div>

@@ -95,6 +95,11 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
                   </div>
                   <div className={styles.leadFooter}>
                     <TemperatureBadge temperature={lead.temperature} />
+                    {lead.isFollowUp && lead.followUpDate && (
+                      <span className={styles.followUpBadge}>
+                        🔁 {new Date(lead.followUpDate).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+                      </span>
+                    )}
                     {lead.source && (
                       <span className={styles.source}>{lead.source}</span>
                     )}

@@ -144,6 +144,7 @@ export default function AdminLeadsClient({
           <span>Nome</span>
           <span>WhatsApp</span>
           <span>Etapa</span>
+          <span>Follow-up</span>
           <span>Temp.</span>
           <span>Corretor</span>
           <span>Data</span>
@@ -169,6 +170,24 @@ export default function AdminLeadsClient({
             <span className={styles.leadName}>{lead.name}</span>
             <span className={styles.phone}>{lead.whatsApp}</span>
             <span className={styles.stage}>{STAGE_LABELS[lead.funnelStage] ?? lead.funnelStage}</span>
+            <span className={styles.stage}>
+              {lead.isFollowUp && lead.followUpDate ? (
+                <span style={{
+                  fontSize: '0.72rem',
+                  fontWeight: 600,
+                  color: '#3b82f6',
+                  background: 'rgba(59,130,246,0.1)',
+                  border: '1px solid rgba(59,130,246,0.25)',
+                  borderRadius: '999px',
+                  padding: '0.1rem 0.45rem',
+                  whiteSpace: 'nowrap',
+                }}>
+                  🔁 {new Date(lead.followUpDate).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: '2-digit' })}
+                </span>
+              ) : (
+                <span style={{ color: 'var(--text-tertiary)', fontSize: '0.8rem' }}>—</span>
+              )}
+            </span>
             <span className={styles.temp}>{TEMP_LABELS[lead.temperature] ?? lead.temperature}</span>
             <span className={styles.agentCell}>
               <span className={styles.agentName}>{lead.agent.name}</span>
