@@ -182,3 +182,25 @@ export async function getNextRoundRobinAgent() {
     activeLeads: target._count.leads,
   };
 }
+
+export async function adminDeleteLead(leadId: string) {
+  await requireAdmin();
+
+  await prisma.lead.delete({
+    where: { id: leadId },
+  });
+
+  revalidatePath("/admin/leads");
+  revalidatePath("/admin/team");
+}
+
+export async function adminClearArchivedLeads() {
+  await requireAdmin();
+
+  await prisma.lead.deleteMany({
+    where: { isArchived: true },
+  });
+
+  revalidatePath("/admin/leads");
+  revalidatePath("/admin/team");
+}

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Lead } from "@prisma/client";
 import { AdminNewLeadModal } from "@/components/leads/AdminNewLeadModal";
+import { adminDeleteLead, adminClearArchivedLeads } from "./actions";
 import styles from "./AdminLeadsPage.module.css";
 
 type LeadWithAgent = Lead & {
@@ -74,6 +75,32 @@ export default function AdminLeadsClient({
       year: "numeric",
     });
 
+  const handleClearArchived = () => {
+    if (confirm("Tem certeza que deseja APAGAR TODOS os leads arquivados permanentemente? Esta ação não pode ser desfeita.")) {
+      startTransition(async () => {
+        try {
+          await adminClearArchivedLeads();
+        } catch (err: any) {
+          alert(err.message || "Erro ao limpar arquivados");
+        }
+      });
+    }
+  };
+
+  const handleDeleteLead = (id: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (confirm("Tem certeza que deseja apagar permanentemente este lead arquivado?")) {
+      startTransition(async () => {
+        try {
+          await adminDeleteLead(id);
+        } catch (err: any) {
+          alert(err.message || "Erro ao deletar lead");
+        }
+      });
+    }
+  };
+
   return (
     <div className={styles.page}>
       {/* Filters */}
@@ -111,6 +138,17 @@ export default function AdminLeadsClient({
           {isPending ? "..." : `${initialLeads.length} lead${initialLeads.length !== 1 ? "s" : ""}`}
         </span>
 
+        {initialArchived && initialLeads.length > 0 && (
+          <button
+            className={styles.clearArchivedBtn}
+            onClick={handleClearArchived}
+            disabled={isPending}
+            title="Apagar todos os arquivados permanentemente"
+          >
+            Limpar Arquivados
+          </button>
+        )}
+
         <button
           id="btn-admin-add-lead"
           className={styles.addLeadBtn}
@@ -137,6 +175,7 @@ export default function AdminLeadsClient({
           <span>Corretor</span>
           <span>Data</span>
           {initialArchived && <span>Motivo</span>}
+          {initialArchived && <span>Excluir</span>}
         </div>
 
         {initialLeads.length === 0 && (
@@ -186,6 +225,16 @@ export default function AdminLeadsClient({
               <span className={styles.archiveReason}>
                 {lead.archiveReason ?? "—"}
               </span>
+            )}
+            {initialArchived && (
+              <button
+                className={styles.deleteBtn}
+                onClick={(e) => handleDeleteLead(lead.id, e)}
+                disabled={isPending}
+                title="Excluir Permanentemente"
+              >
+                🗑️
+              </button>
             )}
           </Link>
         ))}

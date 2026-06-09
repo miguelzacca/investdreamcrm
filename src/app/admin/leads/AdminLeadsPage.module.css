@@ -144,6 +144,10 @@
   grid-template-columns: 1.4fr 0.9fr 1.1fr 0.85fr 0.7fr 1fr 0.8fr 1.5fr;
 }
 
+.tableHead:has(span:nth-child(9)) {
+  grid-template-columns: 1.4fr 0.9fr 1.1fr 0.85fr 0.7fr 1fr 0.8fr 1.5fr 2.5rem;
+}
+
 .tableRow {
   display: grid;
   grid-template-columns: 1.6fr 1fr 1.2fr 0.9fr 0.8fr 1.2fr 0.9fr;
@@ -170,6 +174,10 @@
 
 .tableRow:has(.archiveReason) {
   grid-template-columns: 1.4fr 0.9fr 1.1fr 0.85fr 0.7fr 1fr 0.8fr 1.5fr;
+}
+
+.tableRow:has(.deleteBtn) {
+  grid-template-columns: 1.4fr 0.9fr 1.1fr 0.85fr 0.7fr 1fr 0.8fr 1.5fr 2.5rem;
 }
 
 .leadName {
@@ -230,4 +238,40 @@
   padding: 3.5rem;
   color: var(--text-secondary);
   font-size: 0.875rem;
+}
+
+.clearArchivedBtn {
+  margin-left: 0.5rem;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1.5px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--radius-md);
+  padding: 0.4375rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--t-fast);
+}
+
+.clearArchivedBtn:hover {
+  background: #ef4444;
+  color: white;
+}
+
+.deleteBtn {
+  background: transparent;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0.2rem;
+  border-radius: var(--radius-sm);
+  transition: all var(--t-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.deleteBtn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  transform: scale(1.1);
 }
