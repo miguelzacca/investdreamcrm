@@ -167,3 +167,33 @@ a {
   .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .md\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
+
+/* Mobile Blocker */
+.mobile-blocker {
+  display: none;
+}
+.app-wrapper {
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .mobile-blocker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    width: 100vw;
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    text-align: center;
+    padding: 2rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 99999;
+  }
+  .app-wrapper {
+    display: none !important;
+  }
+}
