@@ -8,6 +8,7 @@ import { useSession, signOut } from 'next-auth/react';
 import { LayoutDashboard, Users, UserPlus, LogOut, FileText, Send, MonitorSmartphone } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { MobileAdminDashboard } from '@/components/mobile/MobileAdminDashboard';
+import { AiChat } from '@/components/ai/AiChat';
 import styles from './AppLayout.module.css';
 
 interface AppLayoutProps {
@@ -113,6 +114,7 @@ export function AppLayout({ children, title }: AppLayoutProps) {
             {children}
           </div>
         </main>
+        <AiChat />
       </div>
     </>
   );
