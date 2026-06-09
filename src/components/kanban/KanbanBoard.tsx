@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Lead, FunnelStage } from '@prisma/client';
 import { updateLeadStage } from '@/app/leads/actions';
 import { TemperatureBadge } from '@/components/ui/Badge';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import styles from './KanbanBoard.module.css';
 
 interface KanbanBoardProps {
@@ -25,6 +25,12 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
   const [leads, setLeads] = useState(initialLeads);
   const [draggedLeadId, setDraggedLeadId] = useState<string | null>(null);
   const [layout, setLayout] = useState<'horizontal' | 'vertical'>('horizontal');
+  
+  // Drag to scroll states
+  const boardRef = useRef<HTMLDivElement>(null);
+  const [isScrolling, setIsScrolling] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
   
   useEffect(() => {
     setLeads(initialLeads);
@@ -60,6 +66,35 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
     setDragOverStage(null);
   };
 
+  // Drag to scroll handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!boardRef.current) return;
+    
+    // Evitar conflito com drag and drop dos cards ou cliques
+    const target = e.target as HTMLElement;
+    if (target.closest(`.${styles.leadCard}`) || target.closest('button') || target.closest('a')) return;
+    
+    setIsScrolling(true);
+    setStartX(e.pageX - boardRef.current.offsetLeft);
+    setScrollLeft(boardRef.current.scrollLeft);
+  };
+
+  const handleMouseLeave = () => {
+    setIsScrolling(false);
+  };
+
+  const handleMouseUp = () => {
+    setIsScrolling(false);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isScrolling || !boardRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - boardRef.current.offsetLeft;
+    const walk = (x - startX) * 1.5; // Velocidade do scroll
+    boardRef.current.scrollLeft = scrollLeft - walk;
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.controls}>
@@ -88,7 +123,14 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
           </button>
         </div>
       </div>
-      <div className={`${styles.board} ${layout === 'vertical' ? styles.vertical : ''}`}>
+      <div 
+        ref={boardRef}
+        className={`${styles.board} ${layout === 'vertical' ? styles.vertical : ''} ${isScrolling ? styles.isScrolling : ''}`}
+        onMouseDown={handleMouseDown}
+        onMouseLeave={handleMouseLeave}
+        onMouseUp={handleMouseUp}
+        onMouseMove={handleMouseMove}
+      >
         {STAGES.map(stage => {
           const stageLeads = leads.filter(l => l.funnelStage === stage.id);
           const isDragOver = dragOverStage === stage.id;
