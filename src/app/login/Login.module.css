@@ -10,9 +10,21 @@
   min-height: 100vh;
   background-color: #f4f6fb;
   background-image:
-    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(79, 70, 229, 0.10) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 50% at 80% 90%, rgba(8, 145, 178, 0.08) 0%, transparent 55%),
-    radial-gradient(ellipse 50% 40% at 50% 50%, rgba(124, 58, 237, 0.05) 0%, transparent 70%);
+    radial-gradient(
+      ellipse 80% 60% at 20% 10%,
+      rgba(79, 70, 229, 0.1) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 60% 50% at 80% 90%,
+      rgba(8, 145, 178, 0.08) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 50% 40% at 50% 50%,
+      rgba(124, 58, 237, 0.05) 0%,
+      transparent 70%
+    );
   position: relative;
   overflow: hidden;
 }
@@ -31,7 +43,7 @@
 .container::before {
   width: 400px;
   height: 400px;
-  background: radial-gradient(circle, rgba(79,70,229,0.12), transparent);
+  background: radial-gradient(circle, rgba(79, 70, 229, 0.12), transparent);
   top: -10%;
   right: 10%;
   animation: floatA 14s ease-in-out infinite alternate;
@@ -40,20 +52,28 @@
 .container::after {
   width: 350px;
   height: 350px;
-  background: radial-gradient(circle, rgba(8,145,178,0.10), transparent);
+  background: radial-gradient(circle, rgba(8, 145, 178, 0.1), transparent);
   bottom: -8%;
   left: 5%;
   animation: floatB 18s ease-in-out infinite alternate;
 }
 
 @keyframes floatA {
-  from { transform: translate(0, 0) scale(1); }
-  to   { transform: translate(30px, 20px) scale(1.08); }
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(30px, 20px) scale(1.08);
+  }
 }
 
 @keyframes floatB {
-  from { transform: translate(0, 0) scale(1); }
-  to   { transform: translate(-20px, -25px) scale(1.05); }
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(-20px, -25px) scale(1.05);
+  }
 }
 
 /* ── Login Card ── */
@@ -61,15 +81,15 @@
   width: 100%;
   max-width: 420px;
   padding: 2.5rem 2rem;
-  background: rgba(255,255,255,0.9);
+  background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(20px) saturate(1.6);
   -webkit-backdrop-filter: blur(20px) saturate(1.6);
   border-radius: var(--radius-2xl);
   box-shadow:
-    0 24px 56px rgba(15,23,42,0.12),
-    0 4px 16px rgba(15,23,42,0.06),
-    0 0 0 1px rgba(255,255,255,0.7) inset;
-  border: 1px solid rgba(255,255,255,0.6);
+    0 24px 56px rgba(15, 23, 42, 0.12),
+    0 4px 16px rgba(15, 23, 42, 0.06),
+    0 0 0 1px rgba(255, 255, 255, 0.7) inset;
+  border: 1px solid rgba(255, 255, 255, 0.6);
   position: relative;
   z-index: 1;
   animation: bounceIn 500ms var(--ease-spring) both;
@@ -80,10 +100,16 @@
   content: '';
   position: absolute;
   top: 0;
-  left: 0;
+  width: calc(100% - 1rem);
+  left: 0.5rem;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, var(--primary) 0%, #7c3aed 50%, #0891b2 100%);
+  background: linear-gradient(
+    90deg,
+    var(--primary) 0%,
+    #7c3aed 50%,
+    #0891b2 100%
+  );
   border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
 }
 
@@ -101,12 +127,18 @@
   width: 60px;
   height: 60px;
   border-radius: var(--radius-xl);
-  background: linear-gradient(135deg, var(--primary-light), rgba(255,255,255,0.8));
+  background: linear-gradient(
+    135deg,
+    var(--primary-light),
+    rgba(255, 255, 255, 0.8)
+  );
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 1rem;
-  box-shadow: 0 4px 16px rgba(79,70,229,0.15), 0 0 0 1px rgba(79,70,229,0.1);
+  box-shadow:
+    0 4px 16px rgba(79, 70, 229, 0.15),
+    0 0 0 1px rgba(79, 70, 229, 0.1);
 }
 
 .logoTitle {
@@ -152,6 +184,6 @@
   font-size: 0.8125rem;
   font-weight: 500;
   text-align: center;
-  border: 1px solid rgba(225,29,72,0.2);
+  border: 1px solid rgba(225, 29, 72, 0.2);
   animation: scaleIn 200ms var(--ease-out);
 }
