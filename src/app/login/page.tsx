@@ -45,7 +45,7 @@ export default function LoginPage() {
     <div className={styles.container}>
       <div className={styles.loginCard}>
         <div className={styles.logo}>
-          <Image src="/image.png" alt="Invest Dream Logo" width={80} height={80} style={{ marginBottom: '1rem' }} />
+          <Image src="/image.png" alt="Invest Dream Logo" width={40} height={40} style={{ marginBottom: '1rem' }} />
           <h1 className={styles.logoTitle}>Invest Dream CRM</h1>
           <p className={styles.logoSubtitle}>Gestão Exclusiva de Aluguéis Anuais</p>
         </div>
