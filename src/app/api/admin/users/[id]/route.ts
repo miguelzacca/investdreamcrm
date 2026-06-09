@@ -73,10 +73,21 @@ export async function DELETE(
     }
 
     if (user._count.leads > 0 || user._count.deals > 0) {
-      return NextResponse.json({ error: "Não é possível apagar o usuário, pois ele possui leads ou negócios associados. Por favor, reatribua-os primeiro." }, { status: 400 });
+      // Reatribui todos os leads e negócios para o admin logado antes de deletar
+      await prisma.$transaction([
+        prisma.lead.updateMany({
+          where: { agentId: id },
+          data: { agentId: session.user.id }
+        }),
+        prisma.deal.updateMany({
+          where: { agentId: id },
+          data: { agentId: session.user.id }
+        }),
+        prisma.user.delete({ where: { id } })
+      ]);
+    } else {
+      await prisma.user.delete({ where: { id } });
     }
-
-    await prisma.user.delete({ where: { id } });
 
     return NextResponse.json({ success: true });
   } catch (err) {
