@@ -24,14 +24,13 @@ export function TemperatureBadge({ temperature }: { temperature: 'COLD' | 'WARM'
 }
 
 export function StageBadge({ stage }: { stage: string }) {
-  const labels: Record<string, string> = {
-    NEW_LEAD: 'Novo Lead',
-    CONTACTED: 'Contato Feito',
+  const stageMap: Record<string, string> = {
+    NEW_LEAD: 'Novo',
+    CONTACTED: 'Contatado',
     VIEWING_SCHEDULED: 'Visita Agendada',
-    PROPOSAL: 'Proposta',
-    NEGOTIATION: 'Negociação',
-    CLOSED_WON: 'Fechado ✓',
+    NEGOTIATION: 'Em Negociação',
+    CLOSED_WON: 'Fechado',
   };
   const variant = stage === 'CLOSED_WON' ? 'success' : 'primary';
-  return <Badge variant={variant}>{labels[stage] || stage}</Badge>;
+  return <Badge variant={variant}>{stageMap[stage] || stage}</Badge>;
 }

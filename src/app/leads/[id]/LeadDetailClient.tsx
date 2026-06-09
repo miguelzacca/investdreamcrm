@@ -24,7 +24,6 @@ const STAGES = [
   { value: 'NEW_LEAD', label: 'Novo Lead' },
   { value: 'CONTACTED', label: 'Contato Feito' },
   { value: 'VIEWING_SCHEDULED', label: 'Visita Agendada' },
-  { value: 'PROPOSAL', label: 'Proposta' },
   { value: 'NEGOTIATION', label: 'Negociação' },
   { value: 'CLOSED_WON', label: 'Fechado/Ganho' },
 ];

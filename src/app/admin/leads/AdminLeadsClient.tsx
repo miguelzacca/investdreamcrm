@@ -30,7 +30,6 @@ const STAGE_LABELS: Record<string, string> = {
   NEW_LEAD: "Novo Lead",
   CONTACTED: "Contato Feito",
   VIEWING_SCHEDULED: "Visita Agendada",
-  PROPOSAL: "Proposta",
   NEGOTIATION: "Negociação",
   CLOSED_WON: "Fechado/Ganho",
 };
