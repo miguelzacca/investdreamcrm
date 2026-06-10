@@ -29,6 +29,42 @@ export async function getActiveLeads() {
   return leads;
 }
 
+/** Admin only: returns all agents (AGENT role) ordered by queueOrder */
+export async function getAgentsForAdmin() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id || session.user.role !== "ADMIN") {
+    throw new Error("Acesso negado.");
+  }
+
+  return prisma.user.findMany({
+    where: { role: "AGENT" },
+    select: { id: true, name: true, username: true, role: true },
+    orderBy: [{ queueOrder: "asc" }, { name: "asc" }],
+  });
+}
+
+/** Admin only: returns active leads for a specific agent */
+export async function getActiveLeadsByAgent(agentId: string) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id || session.user.role !== "ADMIN") {
+    throw new Error("Acesso negado.");
+  }
+
+  const now = new Date();
+
+  return prisma.lead.findMany({
+    where: {
+      agentId,
+      isArchived: false,
+      OR: [
+        { isFollowUp: false },
+        { isFollowUp: true, followUpDate: { lte: now } },
+      ],
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
 export async function getLead(leadId: string) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) throw new Error("Não autorizado");
