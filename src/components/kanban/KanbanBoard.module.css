@@ -248,9 +248,100 @@
   color: var(--text-secondary);
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.25rem;
   margin-bottom: 0.625rem;
   line-height: 1.4;
+}
+
+/* Phone row: number + WA button */
+.leadPhoneRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem;
+}
+
+.leadPhone {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* WhatsApp button */
+.waBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: var(--radius-full);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  background: #dcfce7;
+  color: #16a34a;
+  border: 1px solid #86efac;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 120ms ease;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.waBtn:hover {
+  background: #22c55e;
+  color: #fff;
+  border-color: #22c55e;
+  transform: scale(1.07);
+}
+
+/* Interest row: text + edit button */
+.leadInterestRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem;
+}
+
+.leadInterestText {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leadInterestEmpty {
+  flex: 1;
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+
+/* Small pencil button to quick-edit interest */
+.interestEditBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.15rem 0.3rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: all 120ms ease;
+  flex-shrink: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.leadCard:hover .interestEditBtn {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.interestEditBtn:hover {
+  background: var(--primary-light);
+  color: var(--primary);
+  border-color: var(--primary);
 }
 
 /* ── Lead Footer ── */
@@ -270,6 +361,110 @@
   text-transform: capitalize;
   font-weight: 500;
   letter-spacing: 0.02em;
+}
+
+/* ── Quick Interest Popup ── */
+.quickInterestPopup {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: 50;
+  background: var(--bg-card);
+  border: 1.5px solid var(--primary);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18), 0 0 0 3px rgba(79,70,229,0.10);
+  padding: 0.625rem 0.75rem 0.75rem;
+  animation: fadeUp 120ms var(--ease-out) both;
+  cursor: default;
+}
+
+.quickInterestHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.quickInterestClose {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--text-tertiary);
+  padding: 0 0.2rem;
+  border-radius: var(--radius-sm);
+  transition: all 100ms;
+}
+
+.quickInterestClose:hover {
+  color: var(--text-primary);
+  background: var(--border-light);
+}
+
+.quickInterestInput {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--border);
+  background: var(--bg-input, var(--bg-card));
+  color: var(--text-primary);
+  font-size: 0.8125rem;
+  outline: none;
+  transition: border-color 120ms;
+}
+
+.quickInterestInput:focus {
+  border-color: var(--primary);
+}
+
+.quickInterestActions {
+  display: flex;
+  gap: 0.4rem;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+.quickInterestCancel {
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 120ms;
+}
+
+.quickInterestCancel:hover {
+  background: var(--border-light);
+}
+
+.quickInterestSave {
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--radius-md);
+  border: none;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 120ms;
+}
+
+.quickInterestSave:hover {
+  background: var(--primary-dark, #4338ca);
+}
+
+.quickInterestSave:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .followUpBadge {
