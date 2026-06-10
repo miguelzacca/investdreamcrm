@@ -157,9 +157,10 @@ interface EditLeadModalProps {
   isOpen: boolean;
   onClose: () => void;
   lead: Lead;
+  isAdmin?: boolean;
 }
 
-function EditLeadModal({ isOpen, onClose, lead }: EditLeadModalProps) {
+function EditLeadModal({ isOpen, onClose, lead, isAdmin }: EditLeadModalProps) {
   const [isPending, startTransition] = useTransition();
   const [name, setName] = useState(lead.name);
   const [whatsApp, setWhatsApp] = useState(lead.whatsApp);
@@ -195,6 +196,7 @@ function EditLeadModal({ isOpen, onClose, lead }: EditLeadModalProps) {
           value={whatsApp}
           onChange={(e) => setWhatsApp(e.target.value)}
           required
+          disabled={!isAdmin}
         />
         <Input
           label="Interesse"
@@ -525,6 +527,7 @@ export default function LeadDetailClient({ lead, isAdmin }: { lead: LeadWithDeal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         lead={lead}
+        isAdmin={isAdmin}
       />
     </div>
   );
