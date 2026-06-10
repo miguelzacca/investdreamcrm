@@ -67,32 +67,13 @@ export default function AdminLeadsClient({
         </Button>
       </div>
 
-      {/* Agent tabs */}
-      <div className={styles.tabBar} role="tablist">
-        {agents.map(agent => {
-          const isActive = agent.id === selectedAgentId;
-          return (
-            <button
-              key={agent.id}
-              role="tab"
-              aria-selected={isActive}
-              onClick={() => handleSelectAgent(agent.id)}
-              className={`${styles.tab} ${isActive ? styles.tabActive : ''}`}
-              id={`tab-agent-${agent.id}`}
-            >
-              <span className={styles.tabAvatar}>
-                {agent.name.charAt(0).toUpperCase()}
-              </span>
-              <span className={styles.tabName}>{agent.name}</span>
-              {isActive && (
-                <span className={styles.tabLeadCount}>
-                  {leads.length}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+      {/* Agent tabs — with drag-to-scroll */}
+      <DragScrollTabBar
+        agents={agents}
+        selectedAgentId={selectedAgentId}
+        leads={leads}
+        onSelect={handleSelectAgent}
+      />
 
       {/* Stats bar */}
       {selectedAgent && (
@@ -127,6 +108,91 @@ export default function AdminLeadsClient({
         onClose={() => setIsModalOpen(false)}
         agents={agents}
       />
+    </div>
+  );
+}
+
+/* ── Drag-to-scroll tab bar ── */
+interface DragScrollTabBarProps {
+  agents: Agent[];
+  selectedAgentId: string | null;
+  leads: Lead[];
+  onSelect: (id: string) => void;
+}
+
+function DragScrollTabBar({ agents, selectedAgentId, leads, onSelect }: DragScrollTabBarProps) {
+  const ref = React.useRef<HTMLDivElement>(null);
+  const isDragging = React.useRef(false);
+  const startX = React.useRef(0);
+  const scrollLeft = React.useRef(0);
+  const dragMoved = React.useRef(false);
+
+  function onMouseDown(e: React.MouseEvent) {
+    if (!ref.current) return;
+    isDragging.current = true;
+    dragMoved.current = false;
+    startX.current = e.pageX - ref.current.offsetLeft;
+    scrollLeft.current = ref.current.scrollLeft;
+    ref.current.style.cursor = 'grabbing';
+  }
+
+  function onMouseMove(e: React.MouseEvent) {
+    if (!isDragging.current || !ref.current) return;
+    e.preventDefault();
+    const x = e.pageX - ref.current.offsetLeft;
+    const walk = (x - startX.current) * 1.5;
+    if (Math.abs(walk) > 4) dragMoved.current = true;
+    ref.current.scrollLeft = scrollLeft.current - walk;
+  }
+
+  function onMouseUp() {
+    isDragging.current = false;
+    if (ref.current) ref.current.style.cursor = 'grab';
+  }
+
+  function onMouseLeave() {
+    isDragging.current = false;
+    if (ref.current) ref.current.style.cursor = 'grab';
+  }
+
+  return (
+    <div
+      ref={ref}
+      className={styles.tabBar}
+      role="tablist"
+      onMouseDown={onMouseDown}
+      onMouseMove={onMouseMove}
+      onMouseUp={onMouseUp}
+      onMouseLeave={onMouseLeave}
+      style={{ cursor: 'grab' }}
+    >
+      {agents.map(agent => {
+        const isActive = agent.id === selectedAgentId;
+        return (
+          <button
+            key={agent.id}
+            role="tab"
+            aria-selected={isActive}
+            onClick={() => {
+              // Don't fire click when the user was dragging
+              if (dragMoved.current) return;
+              onSelect(agent.id);
+            }}
+            className={`${styles.tab} ${isActive ? styles.tabActive : ''}`}
+            id={`tab-agent-${agent.id}`}
+          >
+            <span className={styles.tabAvatar}>
+              {agent.name.charAt(0).toUpperCase()}
+            </span>
+            <span className={styles.tabName}>{agent.name}</span>
+            {isActive && (
+              <span className={styles.tabLeadCount}>
+                {leads.length}
+              </span>
+            )}
+          </button>
+        );
+      })}
     </div>
   );
 }
