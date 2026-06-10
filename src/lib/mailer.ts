@@ -10,6 +10,27 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+function buildWhatsAppUrl(phone: string): string {
+  // 1. Remove tudo que não seja dígito
+  let digits = phone.replace(/\D/g, "");
+
+  // 2. Remove zeros à esquerda (ex: "0xx" de discagem antiga)
+  digits = digits.replace(/^0+/, "");
+
+  // 3. Se ainda não começa com o DDI 55 (Brasil), adiciona
+  //    Heurística: números brasileiros sem DDI têm 10 ou 11 dígitos (DDD + número)
+  if (!digits.startsWith("55") && (digits.length === 10 || digits.length === 11)) {
+    digits = "55" + digits;
+  }
+
+  // 4. Após adicionar o 55, verifica se o número local tem 8 dígitos (fixo sem o 9)
+  //    Formato esperado com DDI: 55 + DDD(2) + número(9) = 13 dígitos
+  //    Se tiver 12 dígitos (55 + DDD + 8 dígitos), o WhatsApp pode rejeitar — deixamos como está,
+  //    pois fixos válidos no Brasil também têm 8 dígitos após o DDD.
+
+  return `https://wa.me/${digits}`;
+}
+
 function buildEmailHtml(options: {
   agentName: string;
   leadName: string;
@@ -87,10 +108,15 @@ function buildEmailHtml(options: {
               <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:28px;">
                 <tr>
                   <td align="center">
+                    ${!isFollowUp && leadWhatsApp ? `
+                    <a href="${buildWhatsAppUrl(leadWhatsApp)}"
+                       style="display:inline-block;padding:14px 32px;background:#25d366;color:#fff;text-decoration:none;border-radius:10px;font-weight:600;font-size:15px;">
+                      💬 Chamar no WhatsApp →
+                    </a>` : `
                     <a href="${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/leads"
                        style="display:inline-block;padding:14px 32px;background:${headerColor};color:#fff;text-decoration:none;border-radius:10px;font-weight:600;font-size:15px;">
                       Abrir CRM →
-                    </a>
+                    </a>`}
                   </td>
                 </tr>
               </table>
