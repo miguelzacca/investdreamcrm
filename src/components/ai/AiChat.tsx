@@ -163,17 +163,7 @@ export function AiChat() {
             <div ref={messagesEndRef} />
           </div>
 
-          <div className={styles.quickActions}>
-            {QUICK_ACTIONS.map((action, i) => (
-              <button 
-                key={i} 
-                className={styles.chip}
-                onClick={() => setInput(action)}
-              >
-                {action}
-              </button>
-            ))}
-          </div>
+          <DragScrollQuickActions onActionSelect={setInput} />
 
           <div className={styles.inputArea}>
             <textarea
@@ -208,3 +198,66 @@ export function AiChat() {
     </div>
   );
 }
+
+/* ── Drag-to-scroll Quick Actions ── */
+function DragScrollQuickActions({ onActionSelect }: { onActionSelect: (action: string) => void }) {
+  const ref = React.useRef<HTMLDivElement>(null);
+  const isDragging = React.useRef(false);
+  const startX = React.useRef(0);
+  const scrollLeft = React.useRef(0);
+  const dragMoved = React.useRef(false);
+
+  function onMouseDown(e: React.MouseEvent) {
+    if (!ref.current) return;
+    isDragging.current = true;
+    dragMoved.current = false;
+    startX.current = e.pageX - ref.current.offsetLeft;
+    scrollLeft.current = ref.current.scrollLeft;
+    ref.current.style.cursor = 'grabbing';
+  }
+
+  function onMouseMove(e: React.MouseEvent) {
+    if (!isDragging.current || !ref.current) return;
+    e.preventDefault();
+    const x = e.pageX - ref.current.offsetLeft;
+    const walk = (x - startX.current) * 1.5;
+    if (Math.abs(walk) > 4) dragMoved.current = true;
+    ref.current.scrollLeft = scrollLeft.current - walk;
+  }
+
+  function onMouseUp() {
+    isDragging.current = false;
+    if (ref.current) ref.current.style.cursor = 'grab';
+  }
+
+  function onMouseLeave() {
+    isDragging.current = false;
+    if (ref.current) ref.current.style.cursor = 'grab';
+  }
+
+  return (
+    <div
+      ref={ref}
+      className={styles.quickActions}
+      onMouseDown={onMouseDown}
+      onMouseMove={onMouseMove}
+      onMouseUp={onMouseUp}
+      onMouseLeave={onMouseLeave}
+      style={{ cursor: 'grab' }}
+    >
+      {QUICK_ACTIONS.map((action, i) => (
+        <button 
+          key={i} 
+          className={styles.chip}
+          onClick={() => {
+            if (dragMoved.current) return;
+            onActionSelect(action);
+          }}
+        >
+          {action}
+        </button>
+      ))}
+    </div>
+  );
+}
+
