@@ -6,6 +6,7 @@ import { Lead, FunnelStage } from '@prisma/client';
 import { updateLeadStage } from '@/app/leads/actions';
 import { TemperatureBadge } from '@/components/ui/Badge';
 import { useEffect, useRef } from 'react';
+import { CloseDealModal } from '@/components/modals/CloseDealModal';
 import styles from './KanbanBoard.module.css';
 
 interface KanbanBoardProps {
@@ -35,6 +36,7 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
     setLeads(initialLeads);
   }, [initialLeads]);
   const [dragOverStage, setDragOverStage] = useState<FunnelStage | null>(null);
+  const [pendingCloseDealLeadId, setPendingCloseDealLeadId] = useState<string | null>(null);
 
   const handleDragStart = (e: React.DragEvent, id: string) => {
     setDraggedLeadId(id);
@@ -53,8 +55,12 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
     if (draggedLeadId) {
       const lead = leads.find(l => l.id === draggedLeadId);
       if (lead && lead.funnelStage !== stage) {
-        setLeads(prev => prev.map(l => l.id === draggedLeadId ? { ...l, funnelStage: stage } : l));
-        await updateLeadStage(draggedLeadId, stage);
+        if (stage === 'CLOSED_WON') {
+          setPendingCloseDealLeadId(draggedLeadId);
+        } else {
+          setLeads(prev => prev.map(l => l.id === draggedLeadId ? { ...l, funnelStage: stage } : l));
+          await updateLeadStage(draggedLeadId, stage);
+        }
       }
     }
     setDraggedLeadId(null);
@@ -186,6 +192,18 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
         );
       })}
       </div>
+      
+      {pendingCloseDealLeadId && (
+        <CloseDealModal
+          isOpen={true}
+          onClose={() => setPendingCloseDealLeadId(null)}
+          leadId={pendingCloseDealLeadId}
+          onSuccess={() => {
+            setLeads(prev => prev.map(l => l.id === pendingCloseDealLeadId ? { ...l, funnelStage: 'CLOSED_WON' } : l));
+            setPendingCloseDealLeadId(null);
+          }}
+        />
+      )}
     </div>
   );
 }
