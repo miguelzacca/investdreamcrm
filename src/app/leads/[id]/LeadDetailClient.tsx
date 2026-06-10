@@ -359,7 +359,7 @@ export default function LeadDetailClient({ lead, isAdmin }: { lead: LeadWithDeal
         <Card className={styles.infoCard}>
           <CardHeader style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row' }}>
             <CardTitle>Informações do Lead</CardTitle>
-            {isAdmin && !lead.isArchived && (
+            {!lead.isArchived && (
               <Button variant="secondary" size="sm" onClick={() => setIsEditModalOpen(true)} disabled={isPending}>
                 <Pencil size={14} style={{ marginRight: '0.25rem' }} />
                 Editar
