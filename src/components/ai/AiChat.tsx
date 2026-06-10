@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Bot, X, Send, Copy, Check, Sparkles } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 import styles from './AiChat.module.css';
 
 interface Message {
@@ -33,6 +34,7 @@ export function AiChat() {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const pathname = usePathname();
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -67,7 +69,10 @@ export function AiChat() {
       const response = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: [...messages, userMessage].map(m => ({ role: m.role, content: m.content })) }),
+        body: JSON.stringify({ 
+          messages: [...messages, userMessage].map(m => ({ role: m.role, content: m.content })),
+          pathname
+        }),
       });
 
       if (!response.ok) throw new Error('Falha na comunicação com a IA');

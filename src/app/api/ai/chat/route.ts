@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    const { messages } = await req.json();
+    const { messages, pathname } = await req.json();
 
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json({ error: 'Formato inválido' }, { status: 400 });
@@ -46,6 +46,20 @@ export async function POST(req: NextRequest) {
       return acc;
     }, {} as Record<string, number>);
 
+    let currentLeadContext = '';
+    if (pathname && pathname.startsWith('/leads/')) {
+      const parts = pathname.split('/');
+      const leadId = parts[parts.length - 1];
+      if (leadId && leadId.length > 10) { // simple check to ensure it's a uuid
+        const currentLead = await prisma.lead.findUnique({
+          where: { id: leadId, agentId }
+        });
+        if (currentLead) {
+          currentLeadContext = `\n\n=== ATENÇÃO: LEAD ATUAL ===\nO corretor está atualmente visualizando o seguinte lead na tela:\n- Nome: ${currentLead.name}\n- Estágio: ${currentLead.funnelStage}\n- Temperatura: ${currentLead.temperature}\n- Interesses do Lead: ${currentLead.interest || 'Não informado'}\n- Origem: ${currentLead.source || 'Não informada'}\nVocê DEVE usar este contexto se ele pedir para "gerar mensagem", "analisar este lead", etc.\n`;
+        }
+      }
+    }
+
     // Compact system instruction
     const systemInstruction = `Você é o CRM AI, assistente inteligente do corretor de imóveis ${session.user.name || session.user.username} da Invest Dream.
 Sua função: ajudar o corretor a escrever mensagens persuasivas (follow-ups) para leads, analisar o funil, sugerir abordagens e resumir métricas.
@@ -54,14 +68,15 @@ CONTEXTO ATUAL DO CORRETOR:
 - Negócios fechados no mês: ${dealsThisMonth.length} | Comissões no mês: R$${commissionThisMonth.toFixed(2)} | Comissão total: R$${totalCommission.toFixed(2)}
 FUNIL DOS TOP 15 LEADS: ${JSON.stringify(funnelCounts)}
 TOP 15 LEADS (Para contexto de nomes e interesses):
-${recentLeads.map(l => `- ${l.name} | ${l.funnelStage} | ${l.temperature} | Int: ${l.interest || 'N/A'}`).join('\n')}
+${recentLeads.map(l => `- ${l.name} | ${l.funnelStage} | ${l.temperature} | Int: ${l.interest || 'N/A'}`).join('\n')}${currentLeadContext}
 
 REGRAS:
 1. Responda SEMPRE em português brasileiro.
 2. Quando pedir para gerar uma mensagem para um cliente, crie um texto altamente persuasivo, em tom profissional, mas empático, pronto para WhatsApp (evite emojis em excesso).
-3. Seja direto e conciso, sem introduções prolixas.
-4. Use o contexto fornecido para basear suas respostas, mas não exponha os dados crus ao usuário sem necessidade.
-5. Quando analisar o funil, indique pontos de atenção ou onde focar.
+3. Utilize ATIVAMENTE os interesses do lead ("Int:" ou "Interesses do Lead:") para personalizar a mensagem. Sempre sugira imóveis ou oportunidades que batam com o interesse do lead.
+4. Seja direto e conciso, sem introduções prolixas.
+5. Use o contexto fornecido para basear suas respostas, mas não exponha os dados crus ao usuário sem necessidade.
+6. Quando analisar o funil, indique pontos de atenção ou onde focar.
 `;
 
     // History trimming: get only the last 8 messages
