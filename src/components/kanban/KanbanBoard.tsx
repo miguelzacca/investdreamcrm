@@ -20,6 +20,15 @@ const STAGES: { id: FunnelStage; title: string; color: string }[] = [
   { id: 'CLOSED_WON',        title: 'Fechado',          color: '#059669' },
 ];
 
+const TEMP_CYCLE = ['COLD', 'WARM', 'HOT'] as const;
+type Temperature = typeof TEMP_CYCLE[number];
+
+const TEMP_LABEL: Record<Temperature, string> = {
+  COLD: '🧊 Frio',
+  WARM: '🌤 Morno',
+  HOT:  '🔥 Quente',
+};
+
 const getWhatsAppLink = (phone: string) => {
   const digits = phone.replace(/\D/g, '');
   if (digits.length === 10 || digits.length === 11) {
@@ -127,10 +136,22 @@ interface LeadCardProps {
   onDragStart: (e: React.DragEvent, id: string) => void;
   onDragEnd: () => void;
   onInterestSave: (leadId: string, interest: string) => Promise<void>;
+  onTemperatureCycle: (leadId: string, next: Temperature) => Promise<void>;
 }
 
-function LeadCard({ lead, isDragging, onDragStart, onDragEnd, onInterestSave }: LeadCardProps) {
+function LeadCard({ lead, isDragging, onDragStart, onDragEnd, onInterestSave, onTemperatureCycle }: LeadCardProps) {
   const [showInterestPopup, setShowInterestPopup] = useState(false);
+  const [isCycling, setIsCycling] = useState(false);
+
+  function cycleTemperature(e: React.MouseEvent) {
+    e.stopPropagation();
+    e.preventDefault();
+    if (isCycling) return;
+    const currentIdx = TEMP_CYCLE.indexOf(lead.temperature as Temperature);
+    const next = TEMP_CYCLE[(currentIdx + 1) % TEMP_CYCLE.length];
+    setIsCycling(true);
+    onTemperatureCycle(lead.id, next).finally(() => setIsCycling(false));
+  }
 
   return (
     <div
@@ -192,7 +213,14 @@ function LeadCard({ lead, isDragging, onDragStart, onDragEnd, onInterestSave }: 
 
       {/* Footer */}
       <div className={styles.leadFooter}>
-        <TemperatureBadge temperature={lead.temperature} />
+        <button
+          type="button"
+          className={`${styles.tempCycleBtn} ${isCycling ? styles.tempCycling : ''}`}
+          onClick={cycleTemperature}
+          title={`Temperatura: ${TEMP_LABEL[lead.temperature as Temperature] ?? lead.temperature} — clique para mudar`}
+        >
+          <TemperatureBadge temperature={lead.temperature} />
+        </button>
         {lead.isFollowUp && lead.followUpDate && (
           <span className={styles.followUpBadge}>
             🔁 {new Date(lead.followUpDate).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
@@ -294,6 +322,12 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
     await updateLead(leadId, { interest });
   };
 
+  // Quick temperature cycle — optimistic update
+  const handleTemperatureCycle = async (leadId: string, next: Temperature) => {
+    setLeads(prev => prev.map(l => l.id === leadId ? { ...l, temperature: next } : l));
+    await updateLead(leadId, { temperature: next });
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.controls}>
@@ -361,6 +395,7 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
                     onDragStart={handleDragStart}
                     onDragEnd={handleDragEnd}
                     onInterestSave={handleInterestSave}
+                    onTemperatureCycle={handleTemperatureCycle}
                   />
                 ))}
               </div>
