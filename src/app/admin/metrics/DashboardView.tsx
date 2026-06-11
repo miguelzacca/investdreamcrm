@@ -154,10 +154,10 @@ export default function DashboardView({ initialMetrics, currentPeriod }: Dashboa
                       <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
-                  <XAxis dataKey="stage" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
-                  <RechartsTooltip contentStyle={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+                  <XAxis dataKey="stage" stroke="var(--text-secondary)" fontSize={12} tickLine={false} axisLine={false} />
+                  <YAxis stroke="var(--text-secondary)" fontSize={12} tickLine={false} axisLine={false} />
+                  <RechartsTooltip contentStyle={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} />
                   <Area type="monotone" dataKey="count" stroke="#8b5cf6" fillOpacity={1} fill="url(#colorCount)" />
                 </AreaChart>
               </ResponsiveContainer>
@@ -207,7 +207,7 @@ export default function DashboardView({ initialMetrics, currentPeriod }: Dashboa
                     <Cell key={`cell-${index}`} fill={entry.fill} />
                   ))}
                 </Pie>
-                <RechartsTooltip contentStyle={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)', borderRadius: '12px' }} />
+                <RechartsTooltip contentStyle={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)', borderRadius: '12px' }} />
                 <Legend verticalAlign="bottom" height={36} />
               </PieChart>
             </ResponsiveContainer>
@@ -223,10 +223,10 @@ export default function DashboardView({ initialMetrics, currentPeriod }: Dashboa
           <div className={styles.chartContainer}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={metrics.monthlyTrends}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
-                <XAxis dataKey="month" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+                <XAxis dataKey="month" stroke="var(--text-secondary)" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis 
-                  stroke="var(--text-muted)" 
+                  stroke="var(--text-secondary)" 
                   fontSize={12} 
                   tickLine={false} 
                   axisLine={false}
@@ -234,7 +234,7 @@ export default function DashboardView({ initialMetrics, currentPeriod }: Dashboa
                 />
                 <RechartsTooltip 
                   formatter={(value: number) => formatCurrency(value)}
-                  contentStyle={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)', borderRadius: '12px' }}
+                  contentStyle={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)', borderRadius: '12px' }}
                 />
                 <Legend />
                 <Line type="monotone" dataKey="revenue" name="Volume Alugado Bruto" stroke="#10b981" strokeWidth={4} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 8 }} />
@@ -249,11 +249,11 @@ export default function DashboardView({ initialMetrics, currentPeriod }: Dashboa
           <div className={styles.chartContainer}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={metrics.monthlyTrends}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
-                <XAxis dataKey="month" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+                <XAxis dataKey="month" stroke="var(--text-secondary)" fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis stroke="var(--text-secondary)" fontSize={12} tickLine={false} axisLine={false} />
                 <RechartsTooltip 
-                  contentStyle={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)', borderRadius: '12px' }}
+                  contentStyle={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)', borderRadius: '12px' }}
                   cursor={{ fill: 'rgba(255,255,255,0.05)' }}
                 />
                 <Bar dataKey="deals" name="Negócios" fill="#f59e0b" radius={[6, 6, 0, 0]} />
@@ -289,7 +289,7 @@ export default function DashboardView({ initialMetrics, currentPeriod }: Dashboa
                 <td>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
                     <span style={{ fontWeight: 600 }}>{broker.totalLeadsReceived} Recebidos</span>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{broker.visitedLeads} levaram à visita</span>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{broker.visitedLeads} levaram à visita</span>
                   </div>
                 </td>
                 <td>
@@ -317,7 +317,7 @@ export default function DashboardView({ initialMetrics, currentPeriod }: Dashboa
                         }} 
                       />
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
                       Geral: {broker.conversionRate.toFixed(1)}%
                     </div>
                   </div>
@@ -326,14 +326,14 @@ export default function DashboardView({ initialMetrics, currentPeriod }: Dashboa
                 <td>
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <span style={{ color: '#10b981', fontWeight: 800, fontSize: '1.1rem' }}>{formatCurrency(broker.totalCommission)}</span>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Volume: {formatCurrency(broker.totalRentVolume)}</span>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Volume: {formatCurrency(broker.totalRentVolume)}</span>
                   </div>
                 </td>
               </tr>
             ))}
             {metrics.brokerPerformance.length === 0 && (
               <tr>
-                <td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '3rem' }}>
+                <td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '3rem' }}>
                   Nenhum dado de corretor disponível no período.
                 </td>
               </tr>
