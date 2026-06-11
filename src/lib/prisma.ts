@@ -11,7 +11,14 @@ const globalForPrisma = globalThis as unknown as {
 
 let adapter;
 if (connectionString) {
-  const pool = globalForPrisma.pool ?? new Pool({ connectionString });
+  // Em produção (serverless), cada invocação cria uma nova instância.
+  // Limitar max:1 evita estourar o limite de conexões do banco.
+  const pool = globalForPrisma.pool ?? new Pool({
+    connectionString,
+    max: process.env.NODE_ENV === 'production' ? 1 : 10,
+    idleTimeoutMillis: 10000,
+    connectionTimeoutMillis: 5000,
+  });
   if (process.env.NODE_ENV !== 'production') globalForPrisma.pool = pool;
   adapter = new PrismaPg(pool);
 }
