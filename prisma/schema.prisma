@@ -57,6 +57,8 @@ model Lead {
   archiveReason String?
   isFollowUp    Boolean     @default(false)
   followUpDate  DateTime?
+  expectedRentAmount Float?
+  expectedCommission Float?
   createdAt     DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
   

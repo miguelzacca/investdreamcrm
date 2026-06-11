@@ -16,7 +16,7 @@ export async function getDashboardStats() {
 
   if (isAdmin) {
     // Admin: métricas globais de toda a equipe
-    const [activeLeads, hotLeads, dealsThisMonth, allDeals, recentLeads, agentStats] =
+    const [activeLeads, hotLeads, dealsThisMonth, allDeals, recentLeads, agentStats, expectedAggregations] =
       await Promise.all([
         prisma.lead.count({ where: { isArchived: false } }),
         prisma.lead.count({ where: { isArchived: false, temperature: "HOT" } }),
@@ -47,6 +47,14 @@ export async function getDashboardStats() {
             },
           },
           orderBy: { name: "asc" },
+        }),
+        // Previsões do Funil (Visitas e Negociações)
+        prisma.lead.aggregate({
+          where: { 
+            isArchived: false,
+            funnelStage: { in: ['VIEWING_SCHEDULED', 'NEGOTIATION'] }
+          },
+          _sum: { expectedRentAmount: true, expectedCommission: true }
         }),
       ]);
 
@@ -93,11 +101,13 @@ export async function getDashboardStats() {
       agentRanking,
       rentAmountThisMonth: dealsThisMonth.reduce((sum, d) => sum + (d.rentAmount ?? 0), 0),
       recurringFeeThisMonth: dealsThisMonth.reduce((sum, d) => sum + (d.recurringManagementFee ?? 0), 0),
+      expectedRentAmount: expectedAggregations._sum.expectedRentAmount ?? 0,
+      expectedCommission: expectedAggregations._sum.expectedCommission ?? 0,
     };
   }
 
   // Agent: métricas apenas do próprio agente
-  const [activeLeads, hotLeads, dealsThisMonth, allDeals, recentLeads] =
+  const [activeLeads, hotLeads, dealsThisMonth, allDeals, recentLeads, expectedAggregations] =
     await Promise.all([
       prisma.lead.count({
         where: { agentId, isArchived: false },
@@ -116,6 +126,15 @@ export async function getDashboardStats() {
         where: { agentId, isArchived: false },
         orderBy: { createdAt: "desc" },
         take: 5,
+      }),
+      // Previsões do Funil (Visitas e Negociações)
+      prisma.lead.aggregate({
+        where: { 
+          agentId,
+          isArchived: false,
+          funnelStage: { in: ['VIEWING_SCHEDULED', 'NEGOTIATION'] }
+        },
+        _sum: { expectedRentAmount: true, expectedCommission: true }
       }),
     ]);
 
@@ -163,5 +182,7 @@ export async function getDashboardStats() {
     totalRecurringFee,
     recentLeads,
     agentRanking: [] as { id: string; name: string; username: string; activeLeads: number; totalDeals: number; totalCommission: number }[],
+    expectedRentAmount: expectedAggregations._sum.expectedRentAmount ?? 0,
+    expectedCommission: expectedAggregations._sum.expectedCommission ?? 0,
   };
 }

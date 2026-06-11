@@ -6,6 +6,7 @@ import { Lead, FunnelStage } from '@prisma/client';
 import { updateLeadStage, updateLead } from '@/app/leads/actions';
 import { TemperatureBadge } from '@/components/ui/Badge';
 import { CloseDealModal } from '@/components/modals/CloseDealModal';
+import { LeadExpectationModal } from '@/components/modals/LeadExpectationModal';
 import styles from './KanbanBoard.module.css';
 
 interface KanbanBoardProps {
@@ -293,6 +294,8 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
 
   const [dragOverStage, setDragOverStage] = useState<FunnelStage | null>(null);
   const [pendingCloseDealLeadId, setPendingCloseDealLeadId] = useState<string | null>(null);
+  const [pendingExpectationLeadId, setPendingExpectationLeadId] = useState<string | null>(null);
+  const [pendingExpectationStage, setPendingExpectationStage] = useState<FunnelStage | null>(null);
 
   const toggleExpandColumn = (stageId: string) => {
     setExpandedColumns(prev => {
@@ -325,6 +328,9 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
       if (lead && lead.funnelStage !== stage) {
         if (stage === 'CLOSED_WON') {
           setPendingCloseDealLeadId(draggedLeadId);
+        } else if (stage === 'VIEWING_SCHEDULED' || stage === 'NEGOTIATION') {
+          setPendingExpectationLeadId(draggedLeadId);
+          setPendingExpectationStage(stage);
         } else {
           setLeads(prev => prev.map(l => l.id === draggedLeadId ? { ...l, funnelStage: stage } : l));
           await updateLeadStage(draggedLeadId, stage);
@@ -486,6 +492,25 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
           onSuccess={() => {
             setLeads(prev => prev.map(l => l.id === pendingCloseDealLeadId ? { ...l, funnelStage: 'CLOSED_WON' } : l));
             setPendingCloseDealLeadId(null);
+          }}
+        />
+      )}
+
+      {pendingExpectationLeadId && pendingExpectationStage && (
+        <LeadExpectationModal
+          isOpen={true}
+          onClose={() => {
+            setPendingExpectationLeadId(null);
+            setPendingExpectationStage(null);
+          }}
+          leadId={pendingExpectationLeadId}
+          targetStage={pendingExpectationStage}
+          initialRentAmount={(leads.find(l => l.id === pendingExpectationLeadId) as any)?.expectedRentAmount}
+          initialCommission={(leads.find(l => l.id === pendingExpectationLeadId) as any)?.expectedCommission}
+          onSuccess={() => {
+            setLeads(prev => prev.map(l => l.id === pendingExpectationLeadId ? { ...l, funnelStage: pendingExpectationStage } : l));
+            setPendingExpectationLeadId(null);
+            setPendingExpectationStage(null);
           }}
         />
       )}

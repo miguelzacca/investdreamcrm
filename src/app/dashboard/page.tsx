@@ -71,6 +71,28 @@ export default async function DashboardPage() {
             </Card>
           </div>
 
+          {/* Previsões do Funil */}
+          <div className={styles.sectionHeader} style={{ marginTop: '2rem' }}>
+            <h2 className={styles.sectionTitle}>📈 Previsões do Funil (Visitas e Negociações)</h2>
+          </div>
+          <div className={styles.summaryRow}>
+            <Card className={styles.summaryCard}>
+              <CardContent className={styles.summaryContent}>
+                <span className={styles.summaryLabel}>Previsão de Ganho Bruto (Equipe)</span>
+                <strong className={styles.summaryValue}>{formatCurrency(stats.expectedRentAmount)}</strong>
+              </CardContent>
+            </Card>
+            <Card className={styles.summaryCard}>
+              <CardContent className={styles.summaryContent}>
+                <span className={styles.summaryLabel}>Previsão de Comissões (Equipe)</span>
+                <strong className={`${styles.summaryValue} ${styles.summaryBlue}`}>
+                  {formatCurrency(stats.expectedCommission)}
+                </strong>
+              </CardContent>
+            </Card>
+            <div /> {/* Empty slot for alignment */}
+          </div>
+
           {/* Ranking de Corretores */}
           {stats.agentRanking.length > 0 && (
             <div>
@@ -207,6 +229,28 @@ export default async function DashboardPage() {
               </strong>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Previsões do Funil */}
+        <div className={styles.sectionHeader} style={{ marginTop: '2rem' }}>
+          <h2 className={styles.sectionTitle}>📈 Minhas Previsões (Visitas e Negociações)</h2>
+        </div>
+        <div className={styles.summaryRow}>
+          <Card className={styles.summaryCard}>
+            <CardContent className={styles.summaryContent}>
+              <span className={styles.summaryLabel}>Previsão de Ganho Bruto</span>
+              <strong className={styles.summaryValue}>{formatCurrency(stats.expectedRentAmount)}</strong>
+            </CardContent>
+          </Card>
+          <Card className={styles.summaryCard}>
+            <CardContent className={styles.summaryContent}>
+              <span className={styles.summaryLabel}>Previsão de Comissões Pendentes</span>
+              <strong className={`${styles.summaryValue} ${styles.summaryBlue}`}>
+                {formatCurrency(stats.expectedCommission)}
+              </strong>
+            </CardContent>
+          </Card>
+          <div /> {/* Empty slot for alignment */}
         </div>
 
         {/* Recent leads */}

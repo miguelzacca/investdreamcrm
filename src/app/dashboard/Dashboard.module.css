@@ -171,6 +171,10 @@
   color: var(--success) !important;
 }
 
+.summaryBlue {
+  color: #0ea5e9 !important;
+}
+
 /* ══════════════════════════════════════
    SECTION HEADER
 ══════════════════════════════════════ */

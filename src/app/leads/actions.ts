@@ -120,6 +120,8 @@ export async function updateLead(
     temperature?: Temperature;
     source?: string;
     funnelStage?: FunnelStage;
+    expectedRentAmount?: number | null;
+    expectedCommission?: number | null;
   }
 ) {
   const session = await getServerSession(authOptions);
@@ -161,6 +163,32 @@ export async function updateLeadStage(leadId: string, newStage: FunnelStage) {
   }
 
   revalidatePath("/leads");
+}
+
+export async function updateLeadExpectationAndStage(
+  leadId: string, 
+  newStage: FunnelStage, 
+  expectedRentAmount: number | null, 
+  expectedCommission: number | null
+) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) throw new Error("Não autorizado");
+
+  const isAdmin = session.user.role === "ADMIN";
+
+  const lead = await prisma.lead.update({
+    where: isAdmin ? { id: leadId } : { id: leadId, agentId: session.user.id },
+    data: { 
+      funnelStage: newStage,
+      expectedRentAmount,
+      expectedCommission
+    },
+    include: { agent: { select: { email: true, name: true } } },
+  });
+
+  revalidatePath("/leads");
+  revalidatePath(`/leads/${leadId}`);
+  revalidatePath("/dashboard");
 }
 
 export async function archiveLead(leadId: string, reason: string) {
