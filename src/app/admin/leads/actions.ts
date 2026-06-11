@@ -60,24 +60,44 @@ export async function adminCreateLeadForAgent(
     },
   });
 
-  // Notifica o corretor
-  prisma.user
-    .findUnique({ where: { id: agentId }, select: { email: true, name: true } })
-    .then((agent) => {
-      if (agent?.email) {
-        sendNewLeadEmail({
-          agentEmail: agent.email,
-          agentName: agent.name,
-          leadName: lead.name,
-          leadWhatsApp: lead.whatsApp,
-          leadInterest: lead.interest,
-          leadSource: lead.source,
-          isFollowUp: false,
-        }).catch((err) => console.error("[adminCreateLeadForAgent] email send error:", err));
-      }
-    })
-    .catch((err) => console.error("[adminCreateLeadForAgent] user fetch error:", err));
+  // Busca dados do agente para notificações
+  const agent = await prisma.user.findUnique({
+    where: { id: agentId },
+    select: {
+      email: true,
+      name: true,
+      pushSubscriptions: true,
+    },
+  });
 
+  // Notifica por email
+  if (agent?.email) {
+    sendNewLeadEmail({
+      agentEmail: agent.email,
+      agentName: agent.name,
+      leadName: lead.name,
+      leadWhatsApp: lead.whatsApp,
+      leadInterest: lead.interest,
+      leadSource: lead.source,
+      isFollowUp: false,
+    }).catch((err) => console.error("[adminCreateLeadForAgent] email send error:", err));
+  }
+
+  // Notifica por push
+  if (agent?.pushSubscriptions && agent.pushSubscriptions.length > 0) {
+    const { sendWebPushNotification } = await import("@/lib/webpush");
+    const payload = JSON.stringify({
+      title: "Novo Lead!",
+      body: `${lead.name} demonstrou interesse. Clique para ver.`,
+      url: `/leads`,
+    });
+    for (const sub of agent.pushSubscriptions) {
+      sendWebPushNotification(
+        { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+        payload
+      ).catch((err) => console.error("[adminCreateLeadForAgent] push send error:", err));
+    }
+  }
 
   revalidatePath("/admin/leads");
   revalidatePath("/admin/team");
