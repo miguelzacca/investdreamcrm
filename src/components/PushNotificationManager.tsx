@@ -3,17 +3,14 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { Bell, X, AlertTriangle } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding)
     .replace(/\-/g, "+")
     .replace(/_/g, "/");
-
   const rawData = window.atob(base64);
   const outputArray = new Uint8Array(rawData.length);
-
   for (let i = 0; i < rawData.length; ++i) {
     outputArray[i] = rawData.charCodeAt(i);
   }
@@ -26,44 +23,40 @@ export function PushNotificationManager() {
   const [showPrompt, setShowPrompt] = useState(false);
   const [isSubscribing, setIsSubscribing] = useState(false);
   const [isClosed, setIsClosed] = useState(false);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && "Notification" in window) {
-      setPermission(Notification.permission);
-      if (Notification.permission === "default" || Notification.permission === "denied") {
-        setShowPrompt(true);
-      } else if (Notification.permission === "granted" && session?.user) {
-        // Ensure subscription is active
-        subscribeToPush();
-      }
+    if (typeof window === "undefined" || !("Notification" in window)) return;
+
+    const perm = Notification.permission;
+    setPermission(perm);
+
+    if (perm === "default" || perm === "denied") {
+      setShowPrompt(true);
+      // small delay so animation is visible
+      setTimeout(() => setVisible(true), 100);
+    } else if (perm === "granted" && session?.user) {
+      subscribeToPush();
     }
   }, [session]);
 
   const subscribeToPush = async () => {
     if (!("serviceWorker" in navigator)) return;
-
     try {
       setIsSubscribing(true);
-      const registration = await navigator.serviceWorker.register("/sw.js");
-
-      // Wait for service worker to be ready
+      await navigator.serviceWorker.register("/sw.js");
       const readyRegistration = await navigator.serviceWorker.ready;
 
-      // Get VAPID public key
       const response = await fetch("/api/web-push/vapid-public-key");
       const { publicKey } = await response.json();
-
       if (!publicKey) throw new Error("No public key");
 
       const convertedVapidKey = urlBase64ToUint8Array(publicKey);
-
-      // Subscribe
       const subscription = await readyRegistration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: convertedVapidKey,
       });
 
-      // Send to backend
       await fetch("/api/web-push/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -87,65 +80,127 @@ export function PushNotificationManager() {
     }
   };
 
-  // Only show for logged in agents/admins, and if not closed in this session
-  if (!session?.user || isClosed) return null;
+  const handleClose = () => {
+    setVisible(false);
+    setTimeout(() => setIsClosed(true), 300);
+  };
+
+  if (!session?.user || isClosed || !showPrompt) return null;
+
+  const bannerStyle: React.CSSProperties = {
+    position: "fixed",
+    bottom: "1.5rem",
+    right: "1.5rem",
+    left: "1.5rem",
+    maxWidth: "24rem",
+    marginLeft: "auto",
+    zIndex: 9999,
+    background: permission === "denied"
+      ? "linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%)"
+      : "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
+    border: `1px solid ${permission === "denied" ? "#fecdd3" : "#334155"}`,
+    borderRadius: "1rem",
+    padding: "1.25rem",
+    boxShadow: "0 20px 60px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.2)",
+    display: "flex",
+    flexDirection: "column",
+    gap: "1rem",
+    transition: "opacity 0.3s ease, transform 0.3s ease",
+    opacity: visible ? 1 : 0,
+    transform: visible ? "translateY(0)" : "translateY(20px)",
+  };
+
+  const iconWrapStyle: React.CSSProperties = {
+    width: "2.5rem",
+    height: "2.5rem",
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+    background: permission === "denied"
+      ? "rgba(239,68,68,0.15)"
+      : "rgba(99,102,241,0.2)",
+    color: permission === "denied" ? "#ef4444" : "#818cf8",
+  };
+
+  const titleStyle: React.CSSProperties = {
+    fontWeight: 600,
+    fontSize: "0.9375rem",
+    color: permission === "denied" ? "#7f1d1d" : "#f1f5f9",
+    margin: 0,
+  };
+
+  const bodyStyle: React.CSSProperties = {
+    fontSize: "0.8125rem",
+    color: permission === "denied" ? "#b91c1c" : "#94a3b8",
+    margin: "0.25rem 0 0",
+    lineHeight: 1.5,
+  };
+
+  const btnStyle: React.CSSProperties = {
+    width: "100%",
+    padding: "0.625rem",
+    borderRadius: "0.625rem",
+    border: "none",
+    cursor: isSubscribing ? "not-allowed" : "pointer",
+    fontWeight: 600,
+    fontSize: "0.875rem",
+    background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
+    color: "#fff",
+    opacity: isSubscribing ? 0.6 : 1,
+    transition: "opacity 0.2s",
+  };
+
+  const closeStyle: React.CSSProperties = {
+    position: "absolute",
+    top: "0.75rem",
+    right: "0.75rem",
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    color: permission === "denied" ? "#ef4444" : "#64748b",
+    display: "flex",
+    alignItems: "center",
+    padding: "0.25rem",
+    borderRadius: "0.25rem",
+  };
 
   return (
-    <AnimatePresence>
-      {showPrompt && permission === "default" && (
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 50 }}
-          className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl rounded-2xl p-5 z-50 flex flex-col gap-4"
-        >
-          <button onClick={() => setIsClosed(true)} className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-600 transition">
-            <X size={18} />
-          </button>
-          <div className="flex items-center gap-3">
-            <div className="bg-blue-100 text-blue-600 p-2 rounded-full">
-              <Bell size={20} />
-            </div>
-            <div>
-              <h3 className="font-semibold text-zinc-900 dark:text-white">Ativar Notificações</h3>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-tight mt-1">
-                Receba alertas instantâneos quando um novo lead for atribuído a você.
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={handleRequestPermission}
-            disabled={isSubscribing}
-            className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition disabled:opacity-50"
-          >
-            {isSubscribing ? "Ativando..." : "Permitir Notificações"}
-          </button>
-        </motion.div>
-      )}
+    <div style={bannerStyle}>
+      <button onClick={handleClose} style={closeStyle}>
+        <X size={16} />
+      </button>
 
-      {showPrompt && permission === "denied" && (
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 50 }}
-          className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 bg-red-50 border border-red-200 shadow-2xl rounded-2xl p-5 z-50 flex flex-col gap-3"
+      <div style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem" }}>
+        <div style={iconWrapStyle}>
+          {permission === "denied"
+            ? <AlertTriangle size={18} />
+            : <Bell size={18} />
+          }
+        </div>
+        <div>
+          <h3 style={titleStyle}>
+            {permission === "denied" ? "Notificações Bloqueadas" : "Ativar Notificações"}
+          </h3>
+          <p style={bodyStyle}>
+            {permission === "denied"
+              ? "Você não receberá alertas de novos leads. Clique no ícone de cadeado na barra de endereços e permita as notificações."
+              : "Receba alertas instantâneos quando um novo lead for atribuído a você — mesmo com o site fechado."
+            }
+          </p>
+        </div>
+      </div>
+
+      {permission === "default" && (
+        <button
+          onClick={handleRequestPermission}
+          disabled={isSubscribing}
+          style={btnStyle}
         >
-          <button onClick={() => setIsClosed(true)} className="absolute top-4 right-4 text-red-400 hover:text-red-600 transition">
-            <X size={18} />
-          </button>
-          <div className="flex items-start gap-3">
-            <div className="mt-0.5 text-red-600">
-              <AlertTriangle size={20} />
-            </div>
-            <div>
-              <h3 className="font-semibold text-red-900">Notificações Bloqueadas</h3>
-              <p className="text-sm text-red-700 leading-tight mt-1">
-                Você não receberá alertas de novos leads. Para ativar, clique no ícone de cadeado na barra de endereços do seu navegador e permita as notificações.
-              </p>
-            </div>
-          </div>
-        </motion.div>
+          {isSubscribing ? "Ativando..." : "🔔 Permitir Notificações"}
+        </button>
       )}
-    </AnimatePresence>
+    </div>
   );
 }
