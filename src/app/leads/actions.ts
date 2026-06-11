@@ -11,17 +11,10 @@ export async function getActiveLeads() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) throw new Error("Não autorizado");
 
-  const now = new Date();
-
   const leads = await prisma.lead.findMany({
     where: {
       agentId: session.user.id,
       isArchived: false,
-      // Exclude follow-up leads whose date is still in the future
-      OR: [
-        { isFollowUp: false },
-        { isFollowUp: true, followUpDate: { lte: now } },
-      ],
     },
     orderBy: { createdAt: 'desc' }
   });
@@ -50,16 +43,10 @@ export async function getActiveLeadsByAgent(agentId: string) {
     throw new Error("Acesso negado.");
   }
 
-  const now = new Date();
-
   return prisma.lead.findMany({
     where: {
       agentId,
       isArchived: false,
-      OR: [
-        { isFollowUp: false },
-        { isFollowUp: true, followUpDate: { lte: now } },
-      ],
     },
     orderBy: { createdAt: "desc" },
   });

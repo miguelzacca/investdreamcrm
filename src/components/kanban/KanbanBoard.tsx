@@ -133,34 +133,55 @@ function QuickInterestPopup({ lead, onClose, onSave }: QuickInterestPopupProps) 
 interface LeadCardProps {
   lead: Lead;
   isDragging: boolean;
+  isGhost?: boolean;
   onDragStart: (e: React.DragEvent, id: string) => void;
   onDragEnd: () => void;
   onInterestSave: (leadId: string, interest: string) => Promise<void>;
   onTemperatureCycle: (leadId: string, next: Temperature) => Promise<void>;
 }
 
-function LeadCard({ lead, isDragging, onDragStart, onDragEnd, onInterestSave, onTemperatureCycle }: LeadCardProps) {
+function LeadCard({ lead, isDragging, isGhost = false, onDragStart, onDragEnd, onInterestSave, onTemperatureCycle }: LeadCardProps) {
   const [showInterestPopup, setShowInterestPopup] = useState(false);
   const [isCycling, setIsCycling] = useState(false);
 
   function cycleTemperature(e: React.MouseEvent) {
     e.stopPropagation();
     e.preventDefault();
-    if (isCycling) return;
+    if (isCycling || isGhost) return;
     const currentIdx = TEMP_CYCLE.indexOf(lead.temperature as Temperature);
     const next = TEMP_CYCLE[(currentIdx + 1) % TEMP_CYCLE.length];
     setIsCycling(true);
     onTemperatureCycle(lead.id, next).finally(() => setIsCycling(false));
   }
 
+  const daysUntil = isGhost && lead.followUpDate
+    ? Math.ceil((new Date(lead.followUpDate).getTime() - Date.now()) / 86400000)
+    : null;
+
   return (
     <div
-      draggable
-      onDragStart={(e) => onDragStart(e, lead.id)}
-      onDragEnd={onDragEnd}
-      className={`${styles.leadCard} ${isDragging ? styles.dragging : ''}`}
+      draggable={!isGhost}
+      onDragStart={isGhost ? undefined : (e) => onDragStart(e, lead.id)}
+      onDragEnd={isGhost ? undefined : onDragEnd}
+      className={`${styles.leadCard} ${isDragging ? styles.dragging : ''} ${isGhost ? styles.ghostCard : ''}`}
       style={{ position: 'relative' }}
+      title={isGhost && lead.followUpDate ? `Follow-up agendado para ${new Date(lead.followUpDate).toLocaleDateString('pt-BR')}` : undefined}
     >
+      {/* Ghost banner */}
+      {isGhost && (
+        <div className={styles.ghostBanner}>
+          <span className={styles.ghostIcon}>🕐</span>
+          <span className={styles.ghostLabel}>
+            {daysUntil === 0 ? 'Hoje' : daysUntil === 1 ? 'Em 1 dia' : `Em ${daysUntil} dias`}
+          </span>
+          {lead.followUpDate && (
+            <span className={styles.ghostDate}>
+              {new Date(lead.followUpDate).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+            </span>
+          )}
+        </div>
+      )}
+
       {/* Name → link to detail */}
       <Link href={`/leads/${lead.id}`} className={styles.leadName}>
         {lead.name}
@@ -168,46 +189,50 @@ function LeadCard({ lead, isDragging, onDragStart, onDragEnd, onInterestSave, on
 
       {/* Info row */}
       <div className={styles.leadInfo}>
-        {/* WhatsApp row with WA button */}
+        {/* WhatsApp row */}
         <div className={styles.leadPhoneRow}>
           <span className={styles.leadPhone}>📞 {lead.whatsApp}</span>
-          <a
-            href={getWhatsAppLink(lead.whatsApp)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.waBtn}
-            title="Abrir WhatsApp"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-            </svg>
-            WA
-          </a>
+          {!isGhost && (
+            <a
+              href={getWhatsAppLink(lead.whatsApp)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.waBtn}
+              title="Abrir WhatsApp"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+              </svg>
+              WA
+            </a>
+          )}
         </div>
 
-        {/* Interest row with quick-edit button */}
+        {/* Interest row */}
         <div className={styles.leadInterestRow}>
           {lead.interest ? (
             <span className={styles.leadInterestText}>🏠 {lead.interest}</span>
           ) : (
             <span className={styles.leadInterestEmpty}>🏠 Sem interesse</span>
           )}
-          <button
-            type="button"
-            className={styles.interestEditBtn}
-            title="Editar interesse rapidamente"
-            onClick={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
-              setShowInterestPopup(true);
-            }}
-          >
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-            </svg>
-          </button>
+          {!isGhost && (
+            <button
+              type="button"
+              className={styles.interestEditBtn}
+              title="Editar interesse rapidamente"
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                setShowInterestPopup(true);
+              }}
+            >
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+            </button>
+          )}
         </div>
       </div>
 
@@ -217,22 +242,18 @@ function LeadCard({ lead, isDragging, onDragStart, onDragEnd, onInterestSave, on
           type="button"
           className={`${styles.tempCycleBtn} ${isCycling ? styles.tempCycling : ''}`}
           onClick={cycleTemperature}
-          title={`Temperatura: ${TEMP_LABEL[lead.temperature as Temperature] ?? lead.temperature} — clique para mudar`}
+          disabled={isGhost}
+          title={isGhost ? undefined : `Temperatura: ${TEMP_LABEL[lead.temperature as Temperature] ?? lead.temperature} — clique para mudar`}
         >
           <TemperatureBadge temperature={lead.temperature} />
         </button>
-        {lead.isFollowUp && lead.followUpDate && (
-          <span className={styles.followUpBadge}>
-            🔁 {new Date(lead.followUpDate).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
-          </span>
-        )}
         {lead.source && (
           <span className={styles.source}>{lead.source}</span>
         )}
       </div>
 
-      {/* Quick interest popup */}
-      {showInterestPopup && (
+      {/* Quick interest popup — only for active leads */}
+      {showInterestPopup && !isGhost && (
         <QuickInterestPopup
           lead={lead}
           onClose={() => setShowInterestPopup(false)}
@@ -362,7 +383,14 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
         onMouseMove={handleMouseMove}
       >
         {STAGES.map(stage => {
-          const stageLeads = leads.filter(l => l.funnelStage === stage.id);
+          const now = new Date();
+          const allStageLeads = leads.filter(l => l.funnelStage === stage.id);
+          const activeLeads = allStageLeads.filter(
+            l => !(l.isFollowUp && l.followUpDate && new Date(l.followUpDate) > now)
+          );
+          const ghostLeads = allStageLeads.filter(
+            l => l.isFollowUp && l.followUpDate && new Date(l.followUpDate) > now
+          );
           const isDragOver = dragOverStage === stage.id;
           const isExpanded = expandedColumns[stage.id];
 
@@ -377,7 +405,12 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
               <div className={styles.columnHeader}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <span className={styles.columnTitle}>{stage.title}</span>
-                  <span className={styles.columnCount}>{stageLeads.length}</span>
+                  <span className={styles.columnCount}>{activeLeads.length}</span>
+                  {ghostLeads.length > 0 && (
+                    <span className={styles.ghostCount} title={`${ghostLeads.length} lead(s) aguardando follow-up`}>
+                      🕐 {ghostLeads.length}
+                    </span>
+                  )}
                 </div>
                 {isExpanded && (
                   <button
@@ -391,24 +424,24 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
               </div>
 
               <div className={`${styles.columnContent} ${isDragOver ? styles.dropActive : ''} ${isExpanded ? styles.expandedContent : ''}`}>
-                {stageLeads.length >= 4 && !isExpanded && (
+                {activeLeads.length >= 4 && !isExpanded && (
                   <div className={styles.expandPromptPopup}>
                     <span className={styles.expandPromptText}>Coluna cheia?</span>
-                    <button 
-                      type="button" 
-                      onClick={() => toggleExpandColumn(stage.id)} 
+                    <button
+                      type="button"
+                      onClick={() => toggleExpandColumn(stage.id)}
                       className={styles.expandPromptBtn}
                     >
                       Expandir espaço
                     </button>
                   </div>
                 )}
-                {stageLeads.length === 0 && (
+                {activeLeads.length === 0 && ghostLeads.length === 0 && (
                   <div className={styles.emptyColumn}>
                     Arraste um lead aqui
                   </div>
                 )}
-                {stageLeads.map(lead => (
+                {activeLeads.map(lead => (
                   <LeadCard
                     key={lead.id}
                     lead={lead}
@@ -419,10 +452,30 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
                     onTemperatureCycle={handleTemperatureCycle}
                   />
                 ))}
+                {ghostLeads.length > 0 && (
+                  <>
+                    <div className={styles.ghostDivider}>
+                      <span>🕐 Aguardando follow-up ({ghostLeads.length})</span>
+                    </div>
+                    {ghostLeads.map(lead => (
+                      <LeadCard
+                        key={lead.id}
+                        lead={lead}
+                        isDragging={false}
+                        isGhost
+                        onDragStart={handleDragStart}
+                        onDragEnd={handleDragEnd}
+                        onInterestSave={handleInterestSave}
+                        onTemperatureCycle={handleTemperatureCycle}
+                      />
+                    ))}
+                  </>
+                )}
               </div>
             </div>
           );
         })}
+
       </div>
 
       {pendingCloseDealLeadId && (
