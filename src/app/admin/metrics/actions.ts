@@ -18,7 +18,7 @@ export interface DashboardMetrics {
   
   funnelMetrics: { stage: string; count: number }[];
   temperatureMetrics: { name: string; value: number }[];
-  sourceMetrics: { name: string; value: number }[];
+  sourceMetrics: { name: string; value: number; fill: string }[];
   
   brokerPerformance: {
     id: string;
