@@ -35,6 +35,7 @@ export function AppLayout({ children, title }: AppLayoutProps) {
   ];
 
   if (isAdmin) {
+    navItems.push({ name: 'Métricas', href: '/admin/metrics', icon: LayoutDashboard });
     navItems.push({ name: 'Distribuir Leads', href: '/admin/leads', icon: Send });
     navItems.push({ name: 'Equipe (Admin)', href: '/admin/team', icon: Users });
     navItems.push({ name: 'Novo Usuário', href: '/admin/users/new', icon: UserPlus });
