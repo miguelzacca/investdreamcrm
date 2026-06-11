@@ -260,11 +260,30 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
     setLeads(initialLeads);
   }, [initialLeads]);
 
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('kanbanExpandedColumns');
+      if (saved) {
+        setExpandedColumns(JSON.parse(saved));
+      }
+    } catch (e) {
+      console.error('Failed to load expanded columns preference', e);
+    }
+  }, []);
+
   const [dragOverStage, setDragOverStage] = useState<FunnelStage | null>(null);
   const [pendingCloseDealLeadId, setPendingCloseDealLeadId] = useState<string | null>(null);
 
   const toggleExpandColumn = (stageId: string) => {
-    setExpandedColumns(prev => ({ ...prev, [stageId]: !prev[stageId] }));
+    setExpandedColumns(prev => {
+      const next = { ...prev, [stageId]: !prev[stageId] };
+      try {
+        localStorage.setItem('kanbanExpandedColumns', JSON.stringify(next));
+      } catch (e) {
+        console.error('Failed to save expanded columns preference', e);
+      }
+      return next;
+    });
   };
 
   const handleDragStart = (e: React.DragEvent, id: string) => {
