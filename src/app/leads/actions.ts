@@ -208,8 +208,10 @@ export async function scheduleFollowUp(leadId: string, followUpDate: Date) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) throw new Error("Não autorizado");
 
+  const isAdmin = session.user.role === "ADMIN";
+
   await prisma.lead.update({
-    where: { id: leadId, agentId: session.user.id },
+    where: isAdmin ? { id: leadId } : { id: leadId, agentId: session.user.id },
     data: {
       isFollowUp: true,
       followUpDate,
