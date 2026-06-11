@@ -248,6 +248,7 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
   const [leads, setLeads] = useState(initialLeads);
   const [draggedLeadId, setDraggedLeadId] = useState<string | null>(null);
   const [layout, setLayout] = useState<'horizontal' | 'vertical'>('horizontal');
+  const [expandedColumns, setExpandedColumns] = useState<Record<string, boolean>>({});
 
   // Drag to scroll states
   const boardRef = useRef<HTMLDivElement>(null);
@@ -261,6 +262,10 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
 
   const [dragOverStage, setDragOverStage] = useState<FunnelStage | null>(null);
   const [pendingCloseDealLeadId, setPendingCloseDealLeadId] = useState<string | null>(null);
+
+  const toggleExpandColumn = (stageId: string) => {
+    setExpandedColumns(prev => ({ ...prev, [stageId]: !prev[stageId] }));
+  };
 
   const handleDragStart = (e: React.DragEvent, id: string) => {
     setDraggedLeadId(id);
@@ -367,21 +372,45 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
         {STAGES.map(stage => {
           const stageLeads = leads.filter(l => l.funnelStage === stage.id);
           const isDragOver = dragOverStage === stage.id;
+          const isExpanded = expandedColumns[stage.id];
 
           return (
             <div
               key={stage.id}
-              className={`${styles.column} ${isDragOver ? styles.dragOver : ''}`}
+              className={`${styles.column} ${isDragOver ? styles.dragOver : ''} ${isExpanded && layout === 'horizontal' ? styles.expandedColumn : ''}`}
               onDragOver={(e) => handleDragOver(e, stage.id)}
               onDrop={(e) => handleDrop(e, stage.id)}
               style={{ '--stage-color': stage.color } as React.CSSProperties}
             >
               <div className={styles.columnHeader}>
-                <span className={styles.columnTitle}>{stage.title}</span>
-                <span className={styles.columnCount}>{stageLeads.length}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span className={styles.columnTitle}>{stage.title}</span>
+                  <span className={styles.columnCount}>{stageLeads.length}</span>
+                </div>
+                {layout === 'horizontal' && isExpanded && (
+                  <button
+                    onClick={() => toggleExpandColumn(stage.id)}
+                    className={styles.collapseColumnBtn}
+                    title="Desfazer expansão"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 14h6v6"/><path d="M20 10h-6V4"/><path d="M14 10l7-7"/><path d="M3 21l7-7"/></svg>
+                  </button>
+                )}
               </div>
 
-              <div className={`${styles.columnContent} ${isDragOver ? styles.dropActive : ''}`}>
+              <div className={`${styles.columnContent} ${isDragOver ? styles.dropActive : ''} ${isExpanded && layout === 'horizontal' ? styles.expandedContent : ''}`}>
+                {layout === 'horizontal' && stageLeads.length >= 4 && !isExpanded && (
+                  <div className={styles.expandPromptPopup}>
+                    <span className={styles.expandPromptText}>Coluna cheia?</span>
+                    <button 
+                      type="button" 
+                      onClick={() => toggleExpandColumn(stage.id)} 
+                      className={styles.expandPromptBtn}
+                    >
+                      Expandir espaço
+                    </button>
+                  </div>
+                )}
                 {stageLeads.length === 0 && (
                   <div className={styles.emptyColumn}>
                     Arraste um lead aqui

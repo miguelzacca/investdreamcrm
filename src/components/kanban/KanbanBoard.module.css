@@ -584,3 +584,82 @@
   justify-content: center;
   height: 80px;
 }
+
+/* ════════════════════════════════════════
+   EXPANDED COLUMN FEATURE
+════════════════════════════════════════ */
+.column.expandedColumn {
+  width: 610px;
+  min-width: 610px;
+}
+
+.columnContent.expandedContent {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: start;
+  align-content: start;
+  gap: 0.625rem;
+}
+
+.columnContent.expandedContent .emptyColumn {
+  grid-column: span 2;
+}
+
+/* Prompt Popup */
+.expandPromptPopup {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: rgba(79, 70, 229, 0.08);
+  border: 1.5px dashed var(--primary);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.25rem;
+  animation: fadeUp 300ms var(--ease-out) both;
+}
+
+.expandPromptText {
+  font-size: 0.75rem;
+  color: var(--primary-dark, #4338ca);
+  font-weight: 700;
+}
+
+.expandPromptBtn {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.6rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 120ms ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.expandPromptBtn:hover {
+  background: var(--primary-dark, #4338ca);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Collapse Button */
+.collapseColumnBtn {
+  background: transparent;
+  border: 1.5px solid var(--border);
+  color: var(--text-tertiary);
+  padding: 0.25rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--t-fast);
+  margin-left: auto;
+}
+
+.collapseColumnBtn:hover {
+  background: var(--primary-light);
+  color: var(--primary);
+  border-color: var(--primary);
+}
