@@ -38,16 +38,12 @@ const ads: Ad[] = [
     badge: '📍 Exclusivo Itapema-SC',
     particles: ['🏠', '🔍', '📱', '📋'],
     logo: (
-      <svg viewBox="0 0 120 32" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ height: 28 }}>
+      <svg viewBox="0 0 148 32" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ height: 28 }}>
         <circle cx="13" cy="13" r="10" fill="#38bdf8" opacity="0.2" />
         <circle cx="13" cy="10" r="5" fill="#38bdf8" />
         <path d="M13 15 Q5 22 13 28 Q21 22 13 15Z" fill="#38bdf8" />
-        <text x="28" y="21" fontFamily="system-ui, sans-serif" fontWeight="800" fontSize="16" fill="white">
-          Imob
-        </text>
-        <text x="70" y="21" fontFamily="system-ui, sans-serif" fontWeight="800" fontSize="16" fill="#38bdf8">
-          Hunter
-        </text>
+        <text x="28" y="21" fontFamily="system-ui, sans-serif" fontWeight="800" fontSize="16" fill="white">Imob</text>
+        <text x="68" y="21" fontFamily="system-ui, sans-serif" fontWeight="800" fontSize="16" fill="#38bdf8">Hunter</text>
       </svg>
     ),
   },
