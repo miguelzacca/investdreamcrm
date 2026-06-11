@@ -247,7 +247,6 @@ function LeadCard({ lead, isDragging, onDragStart, onDragEnd, onInterestSave, on
 export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
   const [leads, setLeads] = useState(initialLeads);
   const [draggedLeadId, setDraggedLeadId] = useState<string | null>(null);
-  const [layout, setLayout] = useState<'horizontal' | 'vertical'>('horizontal');
   const [expandedColumns, setExpandedColumns] = useState<Record<string, boolean>>({});
 
   // Drag to scroll states
@@ -354,35 +353,9 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
 
   return (
     <div className={styles.container}>
-      <div className={styles.controls}>
-        <div className={styles.layoutToggle}>
-          <button
-            onClick={() => setLayout('horizontal')}
-            className={`${styles.toggleBtn} ${layout === 'horizontal' ? styles.active : ''}`}
-            title="Visualização em Colunas"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="9" y1="3" x2="9" y2="21"></line>
-              <line x1="15" y1="3" x2="15" y2="21"></line>
-            </svg>
-          </button>
-          <button
-            onClick={() => setLayout('vertical')}
-            className={`${styles.toggleBtn} ${layout === 'vertical' ? styles.active : ''}`}
-            title="Visualização em Linhas"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="3" y1="9" x2="21" y2="9"></line>
-              <line x1="3" y1="15" x2="21" y2="15"></line>
-            </svg>
-          </button>
-        </div>
-      </div>
       <div
         ref={boardRef}
-        className={`${styles.board} ${layout === 'vertical' ? styles.vertical : ''} ${isScrolling ? styles.isScrolling : ''}`}
+        className={`${styles.board} ${isScrolling ? styles.isScrolling : ''}`}
         onMouseDown={handleMouseDown}
         onMouseLeave={handleMouseLeave}
         onMouseUp={handleMouseUp}
@@ -396,7 +369,7 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
           return (
             <div
               key={stage.id}
-              className={`${styles.column} ${isDragOver ? styles.dragOver : ''} ${isExpanded && layout === 'horizontal' ? styles.expandedColumn : ''}`}
+              className={`${styles.column} ${isDragOver ? styles.dragOver : ''} ${isExpanded ? styles.expandedColumn : ''}`}
               onDragOver={(e) => handleDragOver(e, stage.id)}
               onDrop={(e) => handleDrop(e, stage.id)}
               style={{ '--stage-color': stage.color } as React.CSSProperties}
@@ -406,7 +379,7 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
                   <span className={styles.columnTitle}>{stage.title}</span>
                   <span className={styles.columnCount}>{stageLeads.length}</span>
                 </div>
-                {layout === 'horizontal' && isExpanded && (
+                {isExpanded && (
                   <button
                     onClick={() => toggleExpandColumn(stage.id)}
                     className={styles.collapseColumnBtn}
@@ -417,8 +390,8 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
                 )}
               </div>
 
-              <div className={`${styles.columnContent} ${isDragOver ? styles.dropActive : ''} ${isExpanded && layout === 'horizontal' ? styles.expandedContent : ''}`}>
-                {layout === 'horizontal' && stageLeads.length >= 4 && !isExpanded && (
+              <div className={`${styles.columnContent} ${isDragOver ? styles.dropActive : ''} ${isExpanded ? styles.expandedContent : ''}`}>
+                {stageLeads.length >= 4 && !isExpanded && (
                   <div className={styles.expandPromptPopup}>
                     <span className={styles.expandPromptText}>Coluna cheia?</span>
                     <button 
