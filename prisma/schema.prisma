@@ -42,6 +42,7 @@ model User {
   inAutoQueue          Boolean   @default(true)
   leads                Lead[]
   deals                Deal[]
+  pushSubscriptions    PushSubscription[]
 }
 
 model Lead {
@@ -78,3 +79,15 @@ model Deal {
   lead                   Lead     @relation(fields: [leadId], references: [id])
   agent                  User     @relation(fields: [agentId], references: [id])
 }
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  userId    String
+  endpoint  String
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+

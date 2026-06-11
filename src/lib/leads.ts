@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { sendNewLeadEmail } from "@/lib/mailer";
 import { Temperature } from "@prisma/client";
+import { sendWebPushNotification } from "@/lib/webpush";
 
 export type LeadInput = {
   name: string;
@@ -79,7 +80,7 @@ export async function createLeadRoundRobin(data: LeadInput) {
     data: { lastLeadReceivedAt: now },
   });
 
-  // Notifica o corretor
+  // Notifica o corretor (Email)
   if (target.email) {
     sendNewLeadEmail({
       agentEmail: target.email,
@@ -90,6 +91,36 @@ export async function createLeadRoundRobin(data: LeadInput) {
       leadSource: lead.source,
       isFollowUp: false,
     }).catch((err) => console.error("[createLeadRoundRobin] email send error:", err));
+  }
+
+  // Notifica o corretor (Push)
+  try {
+    const pushSubscriptions = await prisma.pushSubscription.findMany({
+      where: { userId: target.id },
+    });
+
+    if (pushSubscriptions.length > 0) {
+      const payload = JSON.stringify({
+        title: "Novo Lead!",
+        body: `${lead.name} demonstrou interesse. Clique para ver.`,
+        url: `/dashboard/leads?search=${encodeURIComponent(lead.name)}`, // ou a rota correta
+      });
+
+      for (const sub of pushSubscriptions) {
+        await sendWebPushNotification(
+          {
+            endpoint: sub.endpoint,
+            keys: {
+              p256dh: sub.p256dh,
+              auth: sub.auth,
+            },
+          },
+          payload
+        );
+      }
+    }
+  } catch (err) {
+    console.error("[createLeadRoundRobin] push notification error:", err);
   }
 
   return { assignedTo: target.name, lead };
