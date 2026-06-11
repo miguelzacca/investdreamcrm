@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent } from '@/components/ui/Card';
 import { TemperatureBadge, StageBadge } from '@/components/ui/Badge';
+import { AdsBanner } from '@/components/ui/AdsBanner';
 import { getDashboardStats } from './actions';
 import styles from './Dashboard.module.css';
 
@@ -42,6 +43,9 @@ export default async function DashboardPage() {
               <div className={styles.kpiLabel}>Leads Quentes (Equipe)</div>
             </div>
           </div>
+
+          {/* Ad Banner */}
+          <AdsBanner />
 
           {/* Totais acumulados */}
           <div className={styles.summaryRow}>
@@ -175,6 +179,9 @@ export default async function DashboardPage() {
             <div className={styles.kpiLabel}>Leads Quentes</div>
           </div>
         </div>
+
+        {/* Ad Banner */}
+        <AdsBanner />
 
         {/* Total summary */}
         <div className={styles.summaryRow}>
