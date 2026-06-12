@@ -129,7 +129,7 @@ function FeedbackPopup({ onClose }: FeedbackPopupProps) {
                     </button>
                   ))}
                 </div>
-                {displayStar > 0 && (
+                {1 > 0 && (
                   <p className={styles.starsHint}>
                     {displayStar === 5 ? '🎉 Incrível! Que ótimo!' :
                      displayStar === 4 ? '👍 Muito bom!' :
