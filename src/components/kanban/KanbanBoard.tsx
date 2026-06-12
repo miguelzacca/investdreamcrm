@@ -8,6 +8,7 @@ import { TemperatureBadge } from '@/components/ui/Badge';
 import { CloseDealModal } from '@/components/modals/CloseDealModal';
 import { LeadExpectationModal } from '@/components/modals/LeadExpectationModal';
 import { trackLeadContact } from '@/lib/tracking';
+import { KanbanPopups } from './KanbanPopups';
 import styles from './KanbanBoard.module.css';
 
 interface KanbanBoardProps {
@@ -412,6 +413,9 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
 
   return (
     <div className={styles.container}>
+      {/* Popups ocasionais: Feedback UX + chamada para Chat IA */}
+      <KanbanPopups />
+
       <div
         ref={boardRef}
         className={`${styles.board} ${isScrolling ? styles.isScrolling : ''}`}
