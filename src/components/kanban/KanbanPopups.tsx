@@ -196,18 +196,10 @@ function AIChatPopup({ onClose }: AIChatPopupProps) {
   function handleAction() {
     markShown(AICHAT_KEY);
     dismissFor(AICHAT_DISMISSED_KEY, 5 * 24 * 60 * 60 * 1000);
-    // Scroll suave para o botão de chat, se existir
-    const chatBtn = document.querySelector('[data-chat-trigger]') as HTMLElement | null;
+    // Acionar o botão do chat IA para abri-lo
+    const chatBtn = document.querySelector('[data-chat-trigger]') as HTMLButtonElement | null;
     if (chatBtn) {
-      chatBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      chatBtn.focus();
-      // pulsar brevemente
-      chatBtn.style.animation = 'none';
-      requestAnimationFrame(() => {
-        chatBtn.style.animation = '';
-        chatBtn.classList.add('chat-highlight-pulse');
-        setTimeout(() => chatBtn.classList.remove('chat-highlight-pulse'), 1500);
-      });
+      chatBtn.click();
     }
     onClose();
   }

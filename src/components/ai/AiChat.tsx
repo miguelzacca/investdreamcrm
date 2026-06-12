@@ -193,6 +193,7 @@ export function AiChat() {
 
       {!isOpen && (
         <button 
+          data-chat-trigger="true"
           className={`${styles.fab} ${isOpen ? styles.isOpen : ''} desktop-only`}
           onClick={() => setIsOpen(true)}
           title="Abrir Assistente AI"
