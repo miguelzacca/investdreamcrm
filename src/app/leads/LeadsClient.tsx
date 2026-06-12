@@ -55,7 +55,7 @@ export default function LeadsClient({ initialLeads }: LeadsClientProps) {
             className={styles.newLeadBtn}
             onClick={() => setIsModalOpen(true)}
           >
-            <span className={styles.newLeadIcon}>+</span>
+            {/* <span className={styles.newLeadIcon}>+</span> */}
             Novo Lead
           </button>
         </div>
