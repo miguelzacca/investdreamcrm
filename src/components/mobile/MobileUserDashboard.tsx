@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { LogOut, Phone, Home, MessageSquare, Clock, CheckCircle2, Inbox } from "lucide-react";
+import { LogOut, Phone, Home, MessageSquare, CheckCircle2, Inbox } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { getActiveLeads } from "@/app/leads/actions";
 import { Lead } from "@prisma/client";
@@ -30,7 +30,7 @@ export function MobileUserDashboard() {
   }, []);
 
   const newLeads = leads.filter(l => l.funnelStage === "NEW_LEAD");
-  const inProgressLeads = leads.filter(l => l.funnelStage !== "NEW_LEAD" && l.funnelStage !== "CLOSED_WON" && l.funnelStage !== "CLOSED_LOST");
+  const inProgressLeads = leads.filter(l => l.funnelStage !== "NEW_LEAD" && l.funnelStage !== "CLOSED_WON");
 
   const firstName = session?.user?.name?.split(" ")[0] || "Corretor";
 
