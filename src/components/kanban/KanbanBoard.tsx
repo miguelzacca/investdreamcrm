@@ -259,15 +259,27 @@ function LeadCard({ lead, isDragging, isGhost = false, onDragStart, onDragEnd, o
 
       {/* Footer */}
       <div className={styles.leadFooter}>
-        <button
-          type="button"
-          className={`${styles.tempCycleBtn} ${isCycling ? styles.tempCycling : ''}`}
-          onClick={cycleTemperature}
-          disabled={isGhost}
-          title={isGhost ? undefined : `Temperatura: ${TEMP_LABEL[lead.temperature as Temperature] ?? lead.temperature} — clique para mudar`}
-        >
-          <TemperatureBadge temperature={lead.temperature} />
-        </button>
+        <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            className={`${styles.tempCycleBtn} ${isCycling ? styles.tempCycling : ''}`}
+            onClick={cycleTemperature}
+            disabled={isGhost}
+            title={isGhost ? undefined : `Temperatura: ${TEMP_LABEL[lead.temperature as Temperature] ?? lead.temperature} — clique para mudar`}
+          >
+            <TemperatureBadge temperature={lead.temperature} />
+          </button>
+          
+          {lead.firstContactedAt ? (
+            <span title="Corretor já iniciou contato" style={{ fontSize: '0.65rem', display: 'flex', alignItems: 'center', gap: '0.15rem', color: '#059669', background: '#d1fae5', padding: '0.1rem 0.35rem', borderRadius: '999px', fontWeight: 600 }}>
+              ✅ Contatado
+            </span>
+          ) : (
+            <span title="Aguardando primeiro contato do corretor" style={{ fontSize: '0.65rem', display: 'flex', alignItems: 'center', gap: '0.15rem', color: '#e11d48', background: '#ffe4e6', padding: '0.1rem 0.35rem', borderRadius: '999px', fontWeight: 600 }}>
+              ⏳ Pendente
+            </span>
+          )}
+        </div>
         {lead.source && (
           <span className={styles.source}>{lead.source}</span>
         )}
