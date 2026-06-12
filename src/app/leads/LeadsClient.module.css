@@ -13,41 +13,111 @@
   justify-content: space-between;
   flex-shrink: 0;
   gap: 1rem;
+  flex-wrap: wrap;
+  padding: 1rem 1.25rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  box-shadow: var(--shadow-sm);
 }
 
-/* ── Stats chips ── */
+/* ── Stats chips group ── */
 .stats {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.8125rem;
-  color: var(--text-secondary);
+  flex-wrap: wrap;
 }
 
-.statItem {
-  display: flex;
+.statChip {
+  display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.3rem 0.75rem;
-  background: var(--bg-card);
+  gap: 0.4rem;
+  padding: 0.4rem 0.875rem;
+  background: var(--bg-main);
   border: 1.5px solid var(--border);
-  border-radius: var(--radius-full);
-  box-shadow: var(--shadow-xs);
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
   transition: all var(--t-fast);
+  cursor: default;
 }
 
-.statItem:hover {
+.statChip:hover {
   border-color: var(--border-focus);
   color: var(--primary);
+  background: var(--primary-light);
 }
 
-.statItem strong {
+.statChipDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.statChipValue {
+  font-weight: 800;
   color: var(--text-primary);
-  font-weight: 700;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.88rem;
 }
 
 .statDivider {
   width: 1px;
-  height: 1rem;
+  height: 1.25rem;
   background: var(--border);
+  flex-shrink: 0;
+}
+
+/* ── Right actions ── */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+/* Premium new lead button */
+.newLeadBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1.25rem;
+  background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%);
+  color: #fff;
+  border: none;
+  border-radius: 0.875rem;
+  font-size: 0.855rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--t-normal);
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+  font-family: inherit;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.newLeadBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.45);
+  background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%);
+}
+
+.newLeadBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+}
+
+.newLeadIcon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1rem;
+  line-height: 1;
 }

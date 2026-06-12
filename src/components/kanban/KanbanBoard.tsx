@@ -15,12 +15,12 @@ interface KanbanBoardProps {
   initialLeads: Lead[];
 }
 
-const STAGES: { id: FunnelStage; title: string; color: string }[] = [
-  { id: 'NEW_LEAD',          title: 'Novo Lead',        color: '#64748b' },
-  { id: 'CONTACTED',         title: 'Contato Feito',    color: '#3b82f6' },
-  { id: 'VIEWING_SCHEDULED', title: 'Visita Agendada',  color: '#8b5cf6' },
-  { id: 'NEGOTIATION',       title: 'Negociação',       color: '#e11d48' },
-  { id: 'CLOSED_WON',        title: 'Fechado',          color: '#059669' },
+const STAGES: { id: FunnelStage; title: string; color: string; emoji: string }[] = [
+  { id: 'NEW_LEAD',          title: 'Novo Lead',        color: '#64748b', emoji: '🌱' },
+  { id: 'CONTACTED',         title: 'Contato Feito',    color: '#3b82f6', emoji: '📞' },
+  { id: 'VIEWING_SCHEDULED', title: 'Visita Agendada',  color: '#8b5cf6', emoji: '🏠' },
+  { id: 'NEGOTIATION',       title: 'Negociação',       color: '#e11d48', emoji: '🤝' },
+  { id: 'CLOSED_WON',        title: 'Fechado',          color: '#059669', emoji: '✅' },
 ];
 
 const TEMP_CYCLE = ['COLD', 'WARM', 'HOT'] as const;
@@ -58,7 +58,6 @@ function QuickInterestPopup({ lead, onClose, onSave }: QuickInterestPopupProps) 
     inputRef.current?.select();
   }, []);
 
-  // Close on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (popupRef.current && !popupRef.current.contains(e.target as Node)) {
@@ -89,7 +88,7 @@ function QuickInterestPopup({ lead, onClose, onSave }: QuickInterestPopupProps) 
       onClick={(e) => e.stopPropagation()}
     >
       <div className={styles.quickInterestHeader}>
-        <span>🏠 Interesse</span>
+        <span>🏠 Interesse do lead</span>
         <button
           type="button"
           className={styles.quickInterestClose}
@@ -124,7 +123,7 @@ function QuickInterestPopup({ lead, onClose, onSave }: QuickInterestPopupProps) 
             className={styles.quickInterestSave}
             disabled={isPending}
           >
-            {isPending ? '...' : 'Salvar'}
+            {isPending ? 'Salvando...' : '✓ Salvar'}
           </button>
         </div>
       </form>
@@ -137,13 +136,17 @@ interface LeadCardProps {
   lead: Lead;
   isDragging: boolean;
   isGhost?: boolean;
+  stageColor: string;
   onDragStart: (e: React.DragEvent, id: string) => void;
   onDragEnd: () => void;
   onInterestSave: (leadId: string, interest: string) => Promise<void>;
   onTemperatureCycle: (leadId: string, next: Temperature) => Promise<void>;
 }
 
-function LeadCard({ lead, isDragging, isGhost = false, onDragStart, onDragEnd, onInterestSave, onTemperatureCycle }: LeadCardProps) {
+function LeadCard({
+  lead, isDragging, isGhost = false, stageColor,
+  onDragStart, onDragEnd, onInterestSave, onTemperatureCycle
+}: LeadCardProps) {
   const [showInterestPopup, setShowInterestPopup] = useState(false);
   const [isCycling, setIsCycling] = useState(false);
 
@@ -167,15 +170,15 @@ function LeadCard({ lead, isDragging, isGhost = false, onDragStart, onDragEnd, o
       onDragStart={isGhost ? undefined : (e) => onDragStart(e, lead.id)}
       onDragEnd={isGhost ? undefined : onDragEnd}
       className={`${styles.leadCard} ${isDragging ? styles.dragging : ''} ${isGhost ? styles.ghostCard : ''}`}
-      style={{ position: 'relative' }}
-      title={isGhost && lead.followUpDate ? `Follow-up agendado para ${new Date(lead.followUpDate).toLocaleDateString('pt-BR')}` : undefined}
+      style={{ '--stage-color': stageColor } as React.CSSProperties}
+      title={isGhost && lead.followUpDate ? `Follow-up: ${new Date(lead.followUpDate).toLocaleDateString('pt-BR')}` : undefined}
     >
       {/* Ghost banner */}
       {isGhost && (
         <div className={styles.ghostBanner}>
           <span className={styles.ghostIcon}>🕐</span>
           <span className={styles.ghostLabel}>
-            {daysUntil === 0 ? 'Hoje' : daysUntil === 1 ? 'Em 1 dia' : `Em ${daysUntil} dias`}
+            {daysUntil === 0 ? 'Follow-up hoje' : daysUntil === 1 ? 'Em 1 dia' : `Em ${daysUntil} dias`}
           </span>
           {lead.followUpDate && (
             <span className={styles.ghostDate}>
@@ -185,22 +188,27 @@ function LeadCard({ lead, isDragging, isGhost = false, onDragStart, onDragEnd, o
         </div>
       )}
 
-      {/* Name → link to detail */}
-      <Link href={`/leads/${lead.id}`} className={styles.leadName}>
-        {lead.name}
-      </Link>
+      {/* Card top: name */}
+      <div className={styles.cardTop}>
+        <Link href={`/leads/${lead.id}`} className={styles.leadName}>
+          {lead.name}
+        </Link>
+      </div>
 
-      {/* Info row */}
+      {/* Info section */}
       <div className={styles.leadInfo}>
-        {/* WhatsApp row */}
+
+        {/* Phone row */}
         <div className={styles.leadPhoneRow}>
-          <span className={styles.leadPhone}>📞 {lead.whatsApp}</span>
+          <span className={styles.leadPhone}>
+            <span className={styles.phoneIcon}>📞</span>
+            {lead.whatsApp}
+          </span>
           {!isGhost && (
-            <div style={{ display: 'flex', gap: '0.25rem' }}>
+            <div className={styles.waBtnGroup}>
               <button
                 type="button"
-                className={styles.waBtn}
-                style={{ padding: '0.2rem 0.4rem', background: '#e2e8f0', color: '#475569', border: 'none' }}
+                className={`${styles.waBtn} ${styles.waBtnCopy}`}
                 title="Copiar número"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -209,24 +217,27 @@ function LeadCard({ lead, isDragging, isGhost = false, onDragStart, onDragEnd, o
                   trackLeadContact(lead.id);
                 }}
               >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
               </button>
               <a
                 href={getWhatsAppLink(lead.whatsApp)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={styles.waBtn}
+                className={`${styles.waBtn} ${styles.waBtnWa}`}
                 title="Abrir WhatsApp"
                 onClick={(e) => {
                   e.stopPropagation();
                   trackLeadContact(lead.id);
                 }}
               >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-              </svg>
-              WA
-            </a>
+                </svg>
+                WA
+              </a>
             </div>
           )}
         </div>
@@ -236,13 +247,13 @@ function LeadCard({ lead, isDragging, isGhost = false, onDragStart, onDragEnd, o
           {lead.interest ? (
             <span className={styles.leadInterestText}>🏠 {lead.interest}</span>
           ) : (
-            <span className={styles.leadInterestEmpty}>🏠 Sem interesse</span>
+            <span className={styles.leadInterestEmpty}>Sem interesse registrado</span>
           )}
           {!isGhost && (
             <button
               type="button"
               className={styles.interestEditBtn}
-              title="Editar interesse rapidamente"
+              title="Editar interesse"
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
@@ -256,37 +267,35 @@ function LeadCard({ lead, isDragging, isGhost = false, onDragStart, onDragEnd, o
             </button>
           )}
         </div>
+
       </div>
 
       {/* Footer */}
       <div className={styles.leadFooter}>
-        <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div className={styles.footerLeft}>
           <button
             type="button"
             className={`${styles.tempCycleBtn} ${isCycling ? styles.tempCycling : ''}`}
             onClick={cycleTemperature}
             disabled={isGhost}
-            title={isGhost ? undefined : `Temperatura: ${TEMP_LABEL[lead.temperature as Temperature] ?? lead.temperature} — clique para mudar`}
+            title={isGhost ? undefined : `${TEMP_LABEL[lead.temperature as Temperature] ?? lead.temperature} — clique para mudar`}
           >
             <TemperatureBadge temperature={lead.temperature} />
           </button>
-          
+
           {lead.firstContactedAt ? (
-            <span title="Corretor já iniciou contato" style={{ fontSize: '0.65rem', display: 'flex', alignItems: 'center', gap: '0.15rem', color: '#059669', background: '#d1fae5', padding: '0.1rem 0.35rem', borderRadius: '999px', fontWeight: 600 }}>
-              ✅ Contatado
-            </span>
+            <span className={styles.contactedBadge}>✓ Contatado</span>
           ) : (
-            <span title="Aguardando primeiro contato do corretor" style={{ fontSize: '0.65rem', display: 'flex', alignItems: 'center', gap: '0.15rem', color: '#e11d48', background: '#ffe4e6', padding: '0.1rem 0.35rem', borderRadius: '999px', fontWeight: 600 }}>
-              ⏳ Pendente
-            </span>
+            <span className={styles.pendingBadge}>⏳ Pendente</span>
           )}
         </div>
+
         {lead.source && (
           <span className={styles.source}>{lead.source}</span>
         )}
       </div>
 
-      {/* Quick interest popup — only for active leads */}
+      {/* Quick interest popup */}
       {showInterestPopup && !isGhost && (
         <QuickInterestPopup
           lead={lead}
@@ -304,7 +313,6 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
   const [draggedLeadId, setDraggedLeadId] = useState<string | null>(null);
   const [expandedColumns, setExpandedColumns] = useState<Record<string, boolean>>({});
 
-  // Drag to scroll states
   const boardRef = useRef<HTMLDivElement>(null);
   const [isScrolling, setIsScrolling] = useState(false);
   const [startX, setStartX] = useState(0);
@@ -317,9 +325,7 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
   useEffect(() => {
     try {
       const saved = localStorage.getItem('kanbanExpandedColumns');
-      if (saved) {
-        setExpandedColumns(JSON.parse(saved));
-      }
+      if (saved) setExpandedColumns(JSON.parse(saved));
     } catch (e) {
       console.error('Failed to load expanded columns preference', e);
     }
@@ -333,11 +339,7 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
   const toggleExpandColumn = (stageId: string) => {
     setExpandedColumns(prev => {
       const next = { ...prev, [stageId]: !prev[stageId] };
-      try {
-        localStorage.setItem('kanbanExpandedColumns', JSON.stringify(next));
-      } catch (e) {
-        console.error('Failed to save expanded columns preference', e);
-      }
+      try { localStorage.setItem('kanbanExpandedColumns', JSON.stringify(next)); } catch {}
       return next;
     });
   };
@@ -355,7 +357,6 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
   const handleDrop = async (e: React.DragEvent, stage: FunnelStage) => {
     e.preventDefault();
     setDragOverStage(null);
-
     if (draggedLeadId) {
       const lead = leads.find(l => l.id === draggedLeadId);
       if (lead && lead.funnelStage !== stage) {
@@ -378,7 +379,7 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
     setDragOverStage(null);
   };
 
-  // Drag to scroll handlers
+  // Drag-to-scroll
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!boardRef.current) return;
     const target = e.target as HTMLElement;
@@ -395,17 +396,14 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
     if (!isScrolling || !boardRef.current) return;
     e.preventDefault();
     const x = e.pageX - boardRef.current.offsetLeft;
-    const walk = (x - startX) * 1.5;
-    boardRef.current.scrollLeft = scrollLeft - walk;
+    boardRef.current.scrollLeft = scrollLeft - (x - startX) * 1.5;
   };
 
-  // Quick interest save — optimistic update
   const handleInterestSave = async (leadId: string, interest: string) => {
     setLeads(prev => prev.map(l => l.id === leadId ? { ...l, interest } : l));
     await updateLead(leadId, { interest });
   };
 
-  // Quick temperature cycle — optimistic update
   const handleTemperatureCycle = async (leadId: string, next: Temperature) => {
     setLeads(prev => prev.map(l => l.id === leadId ? { ...l, temperature: next } : l));
     await updateLead(leadId, { temperature: next });
@@ -413,7 +411,6 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
 
   return (
     <div className={styles.container}>
-      {/* Popups ocasionais: Feedback UX + chamada para Chat IA */}
       <KanbanPopups />
 
       <div
@@ -444,12 +441,14 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
               onDrop={(e) => handleDrop(e, stage.id)}
               style={{ '--stage-color': stage.color } as React.CSSProperties}
             >
+              {/* Column header */}
               <div className={styles.columnHeader}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div className={styles.columnHeaderLeft}>
+                  <span className={styles.columnDot} />
                   <span className={styles.columnTitle}>{stage.title}</span>
                   <span className={styles.columnCount}>{activeLeads.length}</span>
                   {ghostLeads.length > 0 && (
-                    <span className={styles.ghostCount} title={`${ghostLeads.length} lead(s) aguardando follow-up`}>
+                    <span className={styles.ghostCount} title={`${ghostLeads.length} aguardando follow-up`}>
                       🕐 {ghostLeads.length}
                     </span>
                   )}
@@ -458,46 +457,60 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
                   <button
                     onClick={() => toggleExpandColumn(stage.id)}
                     className={styles.collapseColumnBtn}
-                    title="Desfazer expansão"
+                    title="Recolher coluna"
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 14h6v6"/><path d="M20 10h-6V4"/><path d="M14 10l7-7"/><path d="M3 21l7-7"/></svg>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M4 14h6v6"/><path d="M20 10h-6V4"/>
+                      <path d="M14 10l7-7"/><path d="M3 21l7-7"/>
+                    </svg>
                   </button>
                 )}
               </div>
 
+              {/* Column content */}
               <div className={`${styles.columnContent} ${isDragOver ? styles.dropActive : ''} ${isExpanded ? styles.expandedContent : ''}`}>
+
+                {/* Expand prompt */}
                 {activeLeads.length >= 4 && !isExpanded && (
                   <div className={styles.expandPromptPopup}>
-                    <span className={styles.expandPromptText}>Coluna cheia?</span>
+                    <span className={styles.expandPromptText}>Coluna cheia</span>
                     <button
                       type="button"
                       onClick={() => toggleExpandColumn(stage.id)}
                       className={styles.expandPromptBtn}
                     >
-                      Expandir espaço
+                      Expandir
                     </button>
                   </div>
                 )}
+
+                {/* Empty state */}
                 {activeLeads.length === 0 && ghostLeads.length === 0 && (
                   <div className={styles.emptyColumn}>
+                    <span className={styles.emptyColumnIcon}>{stage.emoji}</span>
                     Arraste um lead aqui
                   </div>
                 )}
+
+                {/* Active leads */}
                 {activeLeads.map(lead => (
                   <LeadCard
                     key={lead.id}
                     lead={lead}
                     isDragging={draggedLeadId === lead.id}
+                    stageColor={stage.color}
                     onDragStart={handleDragStart}
                     onDragEnd={handleDragEnd}
                     onInterestSave={handleInterestSave}
                     onTemperatureCycle={handleTemperatureCycle}
                   />
                 ))}
+
+                {/* Ghost leads */}
                 {ghostLeads.length > 0 && (
                   <>
                     <div className={styles.ghostDivider}>
-                      <span>🕐 Aguardando follow-up ({ghostLeads.length})</span>
+                      <span>🕐 Follow-up ({ghostLeads.length})</span>
                     </div>
                     {ghostLeads.map(lead => (
                       <LeadCard
@@ -505,6 +518,7 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
                         lead={lead}
                         isDragging={false}
                         isGhost
+                        stageColor={stage.color}
                         onDragStart={handleDragStart}
                         onDragEnd={handleDragEnd}
                         onInterestSave={handleInterestSave}
@@ -517,16 +531,18 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
             </div>
           );
         })}
-
       </div>
 
+      {/* Modals */}
       {pendingCloseDealLeadId && (
         <CloseDealModal
           isOpen={true}
           onClose={() => setPendingCloseDealLeadId(null)}
           leadId={pendingCloseDealLeadId}
           onSuccess={() => {
-            setLeads(prev => prev.map(l => l.id === pendingCloseDealLeadId ? { ...l, funnelStage: 'CLOSED_WON' } : l));
+            setLeads(prev => prev.map(l =>
+              l.id === pendingCloseDealLeadId ? { ...l, funnelStage: 'CLOSED_WON' } : l
+            ));
             setPendingCloseDealLeadId(null);
           }}
         />
@@ -544,7 +560,9 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
           initialRentAmount={(leads.find(l => l.id === pendingExpectationLeadId) as any)?.expectedRentAmount}
           initialCommission={(leads.find(l => l.id === pendingExpectationLeadId) as any)?.expectedCommission}
           onSuccess={() => {
-            setLeads(prev => prev.map(l => l.id === pendingExpectationLeadId ? { ...l, funnelStage: pendingExpectationStage } : l));
+            setLeads(prev => prev.map(l =>
+              l.id === pendingExpectationLeadId ? { ...l, funnelStage: pendingExpectationStage! } : l
+            ));
             setPendingExpectationLeadId(null);
             setPendingExpectationStage(null);
           }}
