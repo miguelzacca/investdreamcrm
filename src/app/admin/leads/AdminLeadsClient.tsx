@@ -74,6 +74,16 @@ export default function AdminLeadsClient({
       year: "numeric",
     });
 
+  const formatResponseTime = (createdAt: Date, contactedAt: Date | null) => {
+    if (!contactedAt) return "—";
+    const diffMs = new Date(contactedAt).getTime() - new Date(createdAt).getTime();
+    const mins = Math.max(0, Math.round(diffMs / 60000));
+    if (mins < 60) return `${mins}m`;
+    const hours = Math.floor(mins / 60);
+    const remainingMins = mins % 60;
+    return `${hours}h ${remainingMins}m`;
+  };
+
   const handleClearArchived = () => {
     if (confirm("Tem certeza que deseja APAGAR TODOS os leads arquivados permanentemente? Esta ação não pode ser desfeita.")) {
       startTransition(async () => {
@@ -169,6 +179,8 @@ export default function AdminLeadsClient({
           <span>Nome</span>
           <span>WhatsApp</span>
           <span>Etapa</span>
+          <span>Contatado</span>
+          <span>Tempo</span>
           <span>Follow-up</span>
           <span>Temp.</span>
           <span>Corretor</span>
@@ -196,6 +208,8 @@ export default function AdminLeadsClient({
             <span className={styles.leadName}>{lead.name}</span>
             <span className={styles.phone}>{lead.whatsApp}</span>
             <span className={styles.stage}>{STAGE_LABELS[lead.funnelStage] ?? lead.funnelStage}</span>
+            <span className={styles.stage}>{lead.firstContactedAt ? '✅ Sim' : '❌ Não'}</span>
+            <span className={styles.stage}>{formatResponseTime(lead.createdAt, lead.firstContactedAt)}</span>
             <span className={styles.stage}>
               {lead.isFollowUp && lead.followUpDate ? (
                 <span style={{

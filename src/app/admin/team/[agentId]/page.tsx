@@ -32,6 +32,16 @@ const formatDate = (d: Date | string) =>
     year: "numeric",
   });
 
+const formatResponseTime = (createdAt: Date, contactedAt: Date | null) => {
+  if (!contactedAt) return "—";
+  const diffMs = contactedAt.getTime() - createdAt.getTime();
+  const mins = Math.max(0, Math.round(diffMs / 60000));
+  if (mins < 60) return `${mins}m`;
+  const hours = Math.floor(mins / 60);
+  const remainingMins = mins % 60;
+  return `${hours}h ${remainingMins}m`;
+};
+
 export default async function AgentDetailPage({
   params,
 }: {
@@ -115,6 +125,8 @@ export default async function AgentDetailPage({
               <span>Nome</span>
               <span>WhatsApp</span>
               <span>Etapa</span>
+              <span>Contatado</span>
+              <span>Tempo</span>
               <span>Temp.</span>
               <span>Criado em</span>
             </div>
@@ -128,6 +140,8 @@ export default async function AgentDetailPage({
                 <span className={styles.leadName}>{lead.name}</span>
                 <span className={styles.leadPhone}>{lead.whatsApp}</span>
                 <span className={styles.leadStage}>{STAGE_LABELS[lead.funnelStage] ?? lead.funnelStage}</span>
+                <span className={styles.leadTemp}>{lead.firstContactedAt ? '✅ Sim' : '❌ Não'}</span>
+                <span className={styles.leadTemp}>{formatResponseTime(lead.createdAt, lead.firstContactedAt)}</span>
                 <span className={styles.leadTemp}>{TEMP_LABELS[lead.temperature] ?? lead.temperature}</span>
                 <span className={styles.leadDate}>{formatDate(lead.createdAt)}</span>
               </Link>

@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { LogOut, Phone, Home, MessageSquare, CheckCircle2, Inbox } from "lucide-react";
+import { LogOut, Phone, Home, MessageSquare, CheckCircle2, Inbox, Copy } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { getActiveLeads } from "@/app/leads/actions";
 import { Lead } from "@prisma/client";
+import { trackLeadContact } from "@/lib/tracking";
 import styles from "./MobileUserDashboard.module.css";
 
 function formatTimeAgo(date: Date) {
@@ -109,15 +110,35 @@ export function MobileUserDashboard() {
                   </div>
                 </div>
                 
-                <a 
-                  href={`https://wa.me/${lead.whatsApp.replace(/\D/g, '')}?text=${encodeURIComponent(`Olá ${lead.name}, sou ${firstName} corretor(a) da Invest Dream. Vi que você tem interesse em ${lead.interest || 'nossos imóveis'}. Como posso ajudar?`)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.whatsappBtn}
-                >
-                  <Phone fill="currentColor" size={18} />
-                  Chamar no WhatsApp
-                </a>
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
+                  <button
+                    type="button"
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: 'var(--surface-sunken)', color: 'var(--text-secondary)',
+                      border: '1px solid var(--border)', borderRadius: '0.75rem',
+                      padding: '0.75rem', cursor: 'pointer'
+                    }}
+                    onClick={() => {
+                      navigator.clipboard.writeText(lead.whatsApp);
+                      trackLeadContact(lead.id);
+                    }}
+                    title="Copiar número"
+                  >
+                    <Copy size={18} />
+                  </button>
+                  <a 
+                    href={`https://wa.me/${lead.whatsApp.replace(/\D/g, '')}?text=${encodeURIComponent(`Olá ${lead.name}, sou ${firstName} corretor(a) da Invest Dream. Vi que você tem interesse em ${lead.interest || 'nossos imóveis'}. Como posso ajudar?`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.whatsappBtn}
+                    style={{ flex: 1, marginTop: 0 }}
+                    onClick={() => trackLeadContact(lead.id)}
+                  >
+                    <Phone fill="currentColor" size={18} />
+                    Chamar no WhatsApp
+                  </a>
+                </div>
               </div>
             ))}
           </div>

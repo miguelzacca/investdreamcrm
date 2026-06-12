@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft, Phone, Home, Thermometer,
-  Tag, Calendar, CheckCircle2, Archive, Clock, Pencil
+  Tag, Calendar, CheckCircle2, Archive, Clock, Pencil, Copy
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { TemperatureBadge, StageBadge } from '@/components/ui/Badge';
 import { updateLead, archiveLead, createDeal, scheduleFollowUp } from '../actions';
+import { trackLeadContact } from '@/lib/tracking';
 import styles from './LeadDetailClient.module.css';
 
 type LeadWithDeals = Lead & { deals: Deal[] };
@@ -375,16 +376,32 @@ export default function LeadDetailClient({ lead, isAdmin }: { lead: LeadWithDeal
             <div className={styles.infoList}>
               <div className={styles.infoRow}>
                 <Phone size={15} className={styles.infoIcon} />
-                <div>
-                  <span className={styles.infoLabel}>WhatsApp</span>
-                  <a
-                    href={getWhatsAppLink(lead.whatsApp)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.infoLink}
+                <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <span className={styles.infoLabel}>WhatsApp</span>
+                    <a
+                      href={getWhatsAppLink(lead.whatsApp)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.infoLink}
+                      onClick={() => trackLeadContact(lead.id)}
+                    >
+                      {lead.whatsApp}
+                    </a>
+                  </div>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    style={{ padding: '0.25rem 0.5rem' }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigator.clipboard.writeText(lead.whatsApp);
+                      trackLeadContact(lead.id);
+                    }}
+                    title="Copiar número"
                   >
-                    {lead.whatsApp}
-                  </a>
+                    <Copy size={14} />
+                  </Button>
                 </div>
               </div>
 

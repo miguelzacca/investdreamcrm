@@ -62,6 +62,9 @@ model Lead {
   expectedCommission Float?
   createdAt     DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
+  firstContactedAt DateTime?
+  lastContactedAt  DateTime?
+  contactCount     Int         @default(0)
   
   agent        User        @relation(fields: [agentId], references: [id])
   deals        Deal[]

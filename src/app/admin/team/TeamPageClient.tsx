@@ -26,10 +26,19 @@ type Agent = {
   closedWon: number;
   totalDeals: number;
   totalCommission: number;
+  avgResponseTimeMins: number | null;
 };
 
 const formatCurrency = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+const formatTMA = (mins: number | null) => {
+  if (mins === null) return "—";
+  if (mins < 60) return `${mins}m`;
+  const hours = Math.floor(mins / 60);
+  const remainingMins = mins % 60;
+  return `${hours}h ${remainingMins}m`;
+};
 
 /* ─── Email edit cell ────────────────────────────────────────────── */
 function EmailEditCell({ agent }: { agent: Agent }) {
@@ -357,6 +366,7 @@ export function TeamPageClient({ team }: { team: Agent[] }) {
             <span>🔥 Quentes</span>
             <span>Fechados</span>
             <span>Comissão Total</span>
+            <span>TMA</span>
             <span></span>
           </div>
           {team.map((agent) => (
@@ -386,6 +396,9 @@ export function TeamPageClient({ team }: { team: Agent[] }) {
               <span className={styles.num}>{agent.hotLeads}</span>
               <span className={styles.num}>{agent.closedWon}</span>
               <span className={styles.commission}>{formatCurrency(agent.totalCommission)}</span>
+              <span className={styles.tma} style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                {formatTMA(agent.avgResponseTimeMins)}
+              </span>
               <DeleteAgentButton agent={agent} />
             </div>
           ))}

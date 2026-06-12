@@ -16,48 +16,43 @@ export async function getDashboardStats() {
 
   if (isAdmin) {
     // Admin: métricas globais de toda a equipe
-    const [activeLeads, hotLeads, dealsThisMonth, allDeals, recentLeads, agentStats, expectedAggregations] =
-      await Promise.all([
-        prisma.lead.count({ where: { isArchived: false } }),
-        prisma.lead.count({ where: { isArchived: false, temperature: "HOT" } }),
-        prisma.deal.findMany({
-          where: { closedAt: { gte: startOfMonth } },
-        }),
-        prisma.deal.findMany({}),
-        prisma.lead.findMany({
-          where: { isArchived: false },
-          orderBy: { createdAt: "desc" },
-          take: 5,
-          include: {
-            agent: { select: { id: true, name: true } },
-          },
-        }),
-        // Ranking de corretores
-        prisma.user.findMany({
-          where: { role: "AGENT" },
-          select: {
-            id: true,
-            name: true,
-            username: true,
-            _count: {
-              select: { leads: { where: { isArchived: false } } },
-            },
-            deals: {
-              select: { firstMonthCommission: true, recurringManagementFee: true },
-            },
-          },
-          orderBy: { name: "asc" },
-        }),
-        // Previsões do Funil (Visitas e Negociações)
-        prisma.lead.aggregate({
-          where: { 
-            isArchived: false,
-            funnelStage: { in: ['VIEWING_SCHEDULED', 'NEGOTIATION'] }
-          },
-          _sum: { expectedRentAmount: true, expectedCommission: true }
-        }),
-      ]);
-
+    // Executar queries sequencialmente para evitar pool connection timeout no db.prisma.io
+    const activeLeads = await prisma.lead.count({ where: { isArchived: false } });
+    const hotLeads = await prisma.lead.count({ where: { isArchived: false, temperature: "HOT" } });
+    const dealsThisMonth = await prisma.deal.findMany({
+      where: { closedAt: { gte: startOfMonth } },
+    });
+    const allDeals = await prisma.deal.findMany({});
+    const recentLeads = await prisma.lead.findMany({
+      where: { isArchived: false },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      include: {
+        agent: { select: { id: true, name: true } },
+      },
+    });
+    const agentStats = await prisma.user.findMany({
+      where: { role: "AGENT" },
+      select: {
+        id: true,
+        name: true,
+        username: true,
+        _count: {
+          select: { leads: { where: { isArchived: false } } },
+        },
+        deals: {
+          select: { firstMonthCommission: true, recurringManagementFee: true },
+        },
+      },
+      orderBy: { name: "asc" },
+    });
+    const expectedAggregations = await prisma.lead.aggregate({
+      where: { 
+        isArchived: false,
+        funnelStage: { in: ['VIEWING_SCHEDULED', 'NEGOTIATION'] }
+      },
+      _sum: { expectedRentAmount: true, expectedCommission: true }
+    });
     const commissionThisMonth = dealsThisMonth.reduce(
       (sum, d) => sum + (d.firstMonthCommission ?? 0),
       0
@@ -106,37 +101,33 @@ export async function getDashboardStats() {
     };
   }
 
-  // Agent: métricas apenas do próprio agente
-  const [activeLeads, hotLeads, dealsThisMonth, allDeals, recentLeads, expectedAggregations] =
-    await Promise.all([
-      prisma.lead.count({
-        where: { agentId, isArchived: false },
-      }),
-      prisma.lead.count({
-        where: { agentId, isArchived: false, temperature: "HOT" },
-      }),
-      prisma.deal.findMany({
-        where: {
-          agentId,
-          closedAt: { gte: startOfMonth },
-        },
-      }),
-      prisma.deal.findMany({ where: { agentId } }),
-      prisma.lead.findMany({
-        where: { agentId, isArchived: false },
-        orderBy: { createdAt: "desc" },
-        take: 5,
-      }),
-      // Previsões do Funil (Visitas e Negociações)
-      prisma.lead.aggregate({
-        where: { 
-          agentId,
-          isArchived: false,
-          funnelStage: { in: ['VIEWING_SCHEDULED', 'NEGOTIATION'] }
-        },
-        _sum: { expectedRentAmount: true, expectedCommission: true }
-      }),
-    ]);
+  // Agent: métricas apenas do próprio agente (Sequencial para evitar timeouts)
+  const activeLeads = await prisma.lead.count({
+    where: { agentId, isArchived: false },
+  });
+  const hotLeads = await prisma.lead.count({
+    where: { agentId, isArchived: false, temperature: "HOT" },
+  });
+  const dealsThisMonth = await prisma.deal.findMany({
+    where: {
+      agentId,
+      closedAt: { gte: startOfMonth },
+    },
+  });
+  const allDeals = await prisma.deal.findMany({ where: { agentId } });
+  const recentLeads = await prisma.lead.findMany({
+    where: { agentId, isArchived: false },
+    orderBy: { createdAt: "desc" },
+    take: 5,
+  });
+  const expectedAggregations = await prisma.lead.aggregate({
+    where: { 
+      agentId,
+      isArchived: false,
+      funnelStage: { in: ['VIEWING_SCHEDULED', 'NEGOTIATION'] }
+    },
+    _sum: { expectedRentAmount: true, expectedCommission: true }
+  });
 
   const commissionThisMonth = dealsThisMonth.reduce(
     (sum, d) => sum + (d.firstMonthCommission ?? 0),

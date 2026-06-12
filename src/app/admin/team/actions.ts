@@ -36,6 +36,18 @@ export async function getTeamStats() {
       (sum, d) => sum + (d.firstMonthCommission ?? 0),
       0
     );
+
+    // Calc Average Response Time (TMA)
+    const contactedLeads = agent.leads.filter(l => l.firstContactedAt);
+    let avgResponseTimeMins = null;
+    if (contactedLeads.length > 0) {
+      const totalMins = contactedLeads.reduce((sum, l) => {
+        const diffMs = l.firstContactedAt!.getTime() - l.createdAt.getTime();
+        return sum + Math.max(0, diffMs / 60000); // in minutes
+      }, 0);
+      avgResponseTimeMins = Math.round(totalMins / contactedLeads.length);
+    }
+
     return {
       id: agent.id,
       name: agent.name,
@@ -50,6 +62,7 @@ export async function getTeamStats() {
       closedWon,
       totalDeals: agent.deals.length,
       totalCommission,
+      avgResponseTimeMins,
     };
   });
 }
@@ -78,6 +91,17 @@ export async function getAgentDetail(agentId: string) {
     0
   );
 
+  // Calc Average Response Time (TMA)
+  const contactedLeads = activeLeads.filter(l => l.firstContactedAt);
+  let avgResponseTimeMins = null;
+  if (contactedLeads.length > 0) {
+    const totalMins = contactedLeads.reduce((sum, l) => {
+      const diffMs = l.firstContactedAt!.getTime() - l.createdAt.getTime();
+      return sum + Math.max(0, diffMs / 60000);
+    }, 0);
+    avgResponseTimeMins = Math.round(totalMins / contactedLeads.length);
+  }
+
   return {
     id: agent.id,
     name: agent.name,
@@ -89,6 +113,7 @@ export async function getAgentDetail(agentId: string) {
     closedWon,
     totalDeals: agent.deals.length,
     totalCommission,
+    avgResponseTimeMins,
   };
 }
 
