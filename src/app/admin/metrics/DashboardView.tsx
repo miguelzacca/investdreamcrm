@@ -149,7 +149,7 @@ export default function DashboardView({ initialMetrics, currentPeriod }: Dashboa
           <h1 className={styles.title}>Centro de Inteligência</h1>
           <p className={styles.subtitle}>Análise completa de desempenho e resultados</p>
         </div>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
           {/* Tab pills */}
           <div className={styles.tabGroup}>
             {(['overview', 'brokers', 'trends'] as const).map(tab => (
@@ -164,7 +164,7 @@ export default function DashboardView({ initialMetrics, currentPeriod }: Dashboa
           </div>
           {/* Period filter */}
           <div className={styles.periodFilter}>
-            <Filter size={15} style={{ color: 'var(--text-tertiary)', margin: '0 0.25rem' }} />
+            <Filter size={13} style={{ color: 'rgba(255,255,255,0.45)', margin: '0 0.2rem' }} />
             {[
               { key: '30', label: '30d' },
               { key: '90', label: '90d' },
@@ -276,7 +276,9 @@ export default function DashboardView({ initialMetrics, currentPeriod }: Dashboa
               {/* Funnel */}
               <div className={`${styles.chartCard} ${styles.chartCardSpan2}`}>
                 <h3 className={styles.chartTitle}>
-                  <Filter size={18} className={styles.textPurple} />
+                  <span className={styles.chartTitleIcon} style={{ background: 'rgba(79,70,229,0.1)' }}>
+                    <Filter size={15} className={styles.textPurple} />
+                  </span>
                   Funil Real de Conversão
                 </h3>
                 <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', flex: 1 }}>
@@ -324,7 +326,9 @@ export default function DashboardView({ initialMetrics, currentPeriod }: Dashboa
               {/* Lead Sources Pie */}
               <div className={styles.chartCard}>
                 <h3 className={styles.chartTitle}>
-                  <PieChartIcon size={18} className={styles.textBlue} />
+                  <span className={styles.chartTitleIcon} style={{ background: 'rgba(8,145,178,0.1)' }}>
+                    <PieChartIcon size={15} className={styles.textBlue} />
+                  </span>
                   Origem dos Leads
                 </h3>
                 <div style={{ flex: 1, minHeight: 200 }}>
@@ -362,7 +366,9 @@ export default function DashboardView({ initialMetrics, currentPeriod }: Dashboa
               {/* Temperature Donut */}
               <div className={styles.chartCard}>
                 <h3 className={styles.chartTitle}>
-                  <Thermometer size={18} className={styles.textOrange} />
+                  <span className={styles.chartTitleIcon} style={{ background: 'rgba(217,119,6,0.1)' }}>
+                    <Thermometer size={15} className={styles.textOrange} />
+                  </span>
                   Temperatura dos Leads
                 </h3>
                 <div style={{ flex: 1, minHeight: 180 }}>
@@ -400,7 +406,9 @@ export default function DashboardView({ initialMetrics, currentPeriod }: Dashboa
               {/* Monthly Revenue */}
               <div className={`${styles.chartCard} ${styles.chartCardSpan2}`}>
                 <h3 className={styles.chartTitle}>
-                  <TrendingUp size={18} className={styles.textGreen} />
+                  <span className={styles.chartTitleIcon} style={{ background: 'rgba(5,150,105,0.1)' }}>
+                    <TrendingUp size={15} className={styles.textGreen} />
+                  </span>
                   Receita Mensal (Últimos 6 Meses)
                 </h3>
                 <div style={{ flex: 1, minHeight: 240 }}>
@@ -463,7 +471,9 @@ export default function DashboardView({ initialMetrics, currentPeriod }: Dashboa
             {/* Full broker table */}
             <motion.div className={styles.tableCard} variants={itemVariants}>
               <h3 className={styles.chartTitle} style={{ marginBottom: '1.25rem' }}>
-                <Users size={18} className={styles.textBlue} />
+                <span className={styles.chartTitleIcon} style={{ background: 'rgba(8,145,178,0.1)' }}>
+                  <Users size={15} className={styles.textBlue} />
+                </span>
                 Desempenho Detalhado por Corretor
               </h3>
               <div style={{ overflowX: 'auto' }}>
@@ -563,7 +573,9 @@ export default function DashboardView({ initialMetrics, currentPeriod }: Dashboa
             {metrics.brokerPerformance.length > 0 && (
               <motion.div className={styles.chartCard} variants={itemVariants}>
                 <h3 className={styles.chartTitle}>
-                  <BarChart2 size={18} className={styles.textPurple} />
+                  <span className={styles.chartTitleIcon} style={{ background: 'rgba(79,70,229,0.1)' }}>
+                    <BarChart2 size={15} className={styles.textPurple} />
+                  </span>
                   Comparativo de Comissão por Corretor
                 </h3>
                 <div style={{ minHeight: 260 }}>
@@ -604,7 +616,9 @@ export default function DashboardView({ initialMetrics, currentPeriod }: Dashboa
             {/* Revenue trend */}
             <motion.div className={styles.chartCard} variants={itemVariants}>
               <h3 className={styles.chartTitle}>
-                <TrendingUp size={18} className={styles.textGreen} />
+                <span className={styles.chartTitleIcon} style={{ background: 'rgba(5,150,105,0.1)' }}>
+                  <TrendingUp size={15} className={styles.textGreen} />
+                </span>
                 Evolução de Volume Bruto (6 meses)
               </h3>
               <div style={{ minHeight: 280 }}>
@@ -635,7 +649,9 @@ export default function DashboardView({ initialMetrics, currentPeriod }: Dashboa
             {/* Deals trend */}
             <motion.div className={styles.chartCard} variants={itemVariants}>
               <h3 className={styles.chartTitle}>
-                <Target size={18} className={styles.textOrange} />
+                <span className={styles.chartTitleIcon} style={{ background: 'rgba(217,119,6,0.1)' }}>
+                  <Target size={15} className={styles.textOrange} />
+                </span>
                 Contratos Fechados por Mês
               </h3>
               <div style={{ minHeight: 260 }}>
@@ -658,7 +674,9 @@ export default function DashboardView({ initialMetrics, currentPeriod }: Dashboa
             {/* Funnel progression line */}
             <motion.div className={styles.chartCard} variants={itemVariants}>
               <h3 className={styles.chartTitle}>
-                <Activity size={18} className={styles.textPurple} />
+                <span className={styles.chartTitleIcon} style={{ background: 'rgba(79,70,229,0.1)' }}>
+                  <Activity size={15} className={styles.textPurple} />
+                </span>
                 Snapshot do Funil Atual
               </h3>
               <div style={{ minHeight: 240 }}>
