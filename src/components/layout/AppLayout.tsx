@@ -8,6 +8,7 @@ import { useSession, signOut } from 'next-auth/react';
 import { LayoutDashboard, Users, UserPlus, LogOut, FileText, Send, MonitorSmartphone } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { MobileAdminDashboard } from '@/components/mobile/MobileAdminDashboard';
+import { MobileUserDashboard } from '@/components/mobile/MobileUserDashboard';
 import { AiChat } from '@/components/ai/AiChat';
 import styles from './AppLayout.module.css';
 
@@ -53,13 +54,7 @@ export function AppLayout({ children, title }: AppLayoutProps) {
       {/* Mobile view for USER */}
       {!isAdmin && (
         <div className="mobile-only">
-          <div className="mobile-blocker" style={{ display: 'flex' }}>
-            <MonitorSmartphone size={64} className="mb-6 text-primary" />
-            <h1 className="text-2xl font-bold mb-2">Acesso Restrito</h1>
-            <p className="text-muted text-base max-w-xs">
-              O Invest Dream CRM foi projetado para oferecer a melhor experiência em telas maiores. Por favor, acesse através de um computador ou notebook.
-            </p>
-          </div>
+          <MobileUserDashboard />
         </div>
       )}
 
