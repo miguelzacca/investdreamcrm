@@ -103,7 +103,7 @@ export async function createLeadRoundRobin(data: LeadInput) {
       const payload = JSON.stringify({
         title: "Novo Lead!",
         body: `${lead.name} demonstrou interesse. Clique para ver.`,
-        url: `/dashboard/leads?search=${encodeURIComponent(lead.name)}`, // ou a rota correta
+        url: `/leads`, // Corrigido para a rota atual do kanban
       });
 
       for (const sub of pushSubscriptions) {

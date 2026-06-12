@@ -24,13 +24,11 @@ export async function POST(req: NextRequest) {
     });
 
     if (existing) {
-      // If it exists, update it or just return
-      if (existing.userId !== session.user.id) {
-        await prisma.pushSubscription.update({
-          where: { id: existing.id },
-          data: { userId: session.user.id, p256dh, auth },
-        });
-      }
+      // If it exists, update it (keys might have rotated, or user changed)
+      await prisma.pushSubscription.update({
+        where: { id: existing.id },
+        data: { userId: session.user.id, p256dh, auth },
+      });
       return NextResponse.json({ success: true, message: "Subscription updated" });
     }
 
