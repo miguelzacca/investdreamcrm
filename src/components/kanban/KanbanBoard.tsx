@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useTransition } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { Lead, FunnelStage } from '@prisma/client';
 import { updateLeadStage, updateLead } from '@/app/leads/actions';
@@ -41,96 +41,7 @@ const getWhatsAppLink = (phone: string) => {
   return `https://wa.me/${digits}`;
 };
 
-/* ─── Quick Interest Popup ─── */
-interface QuickInterestPopupProps {
-  lead: Lead;
-  onClose: () => void;
-  onSave: (leadId: string, interest: string) => Promise<void>;
-}
 
-function QuickInterestPopup({ lead, onClose, onSave }: QuickInterestPopupProps) {
-  const [value, setValue] = useState(lead.interest || '');
-  const [isPending, startTransition] = useTransition();
-  const inputRef = useRef<HTMLInputElement>(null);
-  const popupRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    inputRef.current?.focus();
-    inputRef.current?.select();
-  }, []);
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (popupRef.current && !popupRef.current.contains(e.target as Node)) {
-        onClose();
-      }
-    }
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [onClose]);
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    e.stopPropagation();
-    startTransition(async () => {
-      await onSave(lead.id, value.trim());
-      onClose();
-    });
-  }
-
-  function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === 'Escape') onClose();
-  }
-
-  return (
-    <div
-      ref={popupRef}
-      className={styles.quickInterestPopup}
-      onClick={(e) => e.stopPropagation()}
-    >
-      <div className={styles.quickInterestHeader}>
-        <span>🏠 Interesse do lead</span>
-        <button
-          type="button"
-          className={styles.quickInterestClose}
-          onClick={onClose}
-          aria-label="Fechar"
-        >
-          ×
-        </button>
-      </div>
-      <form onSubmit={handleSubmit}>
-        <input
-          ref={inputRef}
-          type="text"
-          className={styles.quickInterestInput}
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Ex: Apto 2 quartos, Zona Sul..."
-          disabled={isPending}
-        />
-        <div className={styles.quickInterestActions}>
-          <button
-            type="button"
-            className={styles.quickInterestCancel}
-            onClick={onClose}
-            disabled={isPending}
-          >
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            className={styles.quickInterestSave}
-            disabled={isPending}
-          >
-            {isPending ? 'Salvando...' : '✓ Salvar'}
-          </button>
-        </div>
-      </form>
-    </div>
-  );
-}
 
 /* ─── Lead Card ─── */
 interface LeadCardProps {
@@ -148,8 +59,11 @@ function LeadCard({
   lead, isDragging, isGhost = false, stageColor,
   onDragStart, onDragEnd, onInterestSave, onTemperatureCycle
 }: LeadCardProps) {
-  const [showInterestPopup, setShowInterestPopup] = useState(false);
+  const [isEditingInterest, setIsEditingInterest] = useState(false);
+  const [interestDraft, setInterestDraft] = useState('');
+  const [isSavingInterest, setIsSavingInterest] = useState(false);
   const [isCycling, setIsCycling] = useState(false);
+  const interestInputRef = useRef<HTMLInputElement>(null);
 
   function cycleTemperature(e: React.MouseEvent) {
     e.stopPropagation();
@@ -161,20 +75,47 @@ function LeadCard({
     onTemperatureCycle(lead.id, next).finally(() => setIsCycling(false));
   }
 
+  function startEditInterest(e: React.MouseEvent) {
+    e.stopPropagation();
+    e.preventDefault();
+    setInterestDraft(lead.interest || '');
+    setIsEditingInterest(true);
+    setTimeout(() => {
+      interestInputRef.current?.focus();
+      interestInputRef.current?.select();
+    }, 20);
+  }
+
+  function cancelEditInterest() {
+    setIsEditingInterest(false);
+  }
+
+  async function saveInterest() {
+    if (isSavingInterest) return;
+    setIsSavingInterest(true);
+    await onInterestSave(lead.id, interestDraft.trim());
+    setIsSavingInterest(false);
+    setIsEditingInterest(false);
+  }
+
+  function handleInterestKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter') { e.preventDefault(); saveInterest(); }
+    if (e.key === 'Escape') { e.preventDefault(); cancelEditInterest(); }
+  }
+
   const daysUntil = isGhost && lead.followUpDate
     ? Math.ceil((new Date(lead.followUpDate).getTime() - Date.now()) / 86400000)
     : null;
 
   return (
     <div
-      draggable={!isGhost}
-      onDragStart={isGhost ? undefined : (e) => onDragStart(e, lead.id)}
+      draggable={!isGhost && !isEditingInterest}
+      onDragStart={isGhost || isEditingInterest ? undefined : (e) => onDragStart(e, lead.id)}
       onDragEnd={isGhost ? undefined : onDragEnd}
       className={`${styles.leadCard} ${isDragging ? styles.dragging : ''} ${isGhost ? styles.ghostCard : ''}`}
       style={{ '--stage-color': stageColor } as React.CSSProperties}
       title={isGhost && lead.followUpDate ? `Follow-up: ${new Date(lead.followUpDate).toLocaleDateString('pt-BR')}` : undefined}
     >
-
 
       {/* Ghost banner */}
       {isGhost && (
@@ -245,29 +186,61 @@ function LeadCard({
           )}
         </div>
 
-        {/* Interest row */}
-        <div className={styles.leadInterestRow}>
-          {lead.interest ? (
-            <span className={styles.leadInterestText}>🏠 {lead.interest}</span>
+        {/* Interest row — inline edit */}
+        <div className={`${styles.leadInterestRow} ${isEditingInterest ? styles.leadInterestRowEditing : ''}`}>
+          {isEditingInterest ? (
+            <>
+              <input
+                ref={interestInputRef}
+                type="text"
+                className={styles.interestInlineInput}
+                value={interestDraft}
+                onChange={(e) => setInterestDraft(e.target.value)}
+                onKeyDown={handleInterestKeyDown}
+                onBlur={saveInterest}
+                placeholder="Ex: Apto 2 quartos, Zona Sul..."
+                disabled={isSavingInterest}
+                onClick={(e) => e.stopPropagation()}
+              />
+              <button
+                type="button"
+                className={styles.interestInlineSave}
+                onMouseDown={(e) => { e.preventDefault(); saveInterest(); }}
+                disabled={isSavingInterest}
+                title="Salvar (Enter)"
+              >
+                ✓
+              </button>
+              <button
+                type="button"
+                className={styles.interestInlineCancel}
+                onMouseDown={(e) => { e.preventDefault(); cancelEditInterest(); }}
+                title="Cancelar (Esc)"
+              >
+                ✕
+              </button>
+            </>
           ) : (
-            <span className={styles.leadInterestEmpty}>Sem interesse registrado</span>
-          )}
-          {!isGhost && (
-            <button
-              type="button"
-              className={styles.interestEditBtn}
-              title="Editar interesse"
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                setShowInterestPopup(true);
-              }}
-            >
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-              </svg>
-            </button>
+            <>
+              {lead.interest ? (
+                <span className={styles.leadInterestText}>🏠 {lead.interest}</span>
+              ) : (
+                <span className={styles.leadInterestEmpty}>Sem interesse registrado</span>
+              )}
+              {!isGhost && (
+                <button
+                  type="button"
+                  className={styles.interestEditBtn}
+                  title="Editar interesse"
+                  onClick={startEditInterest}
+                >
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                </button>
+              )}
+            </>
           )}
         </div>
 
@@ -297,15 +270,6 @@ function LeadCard({
           <span className={styles.source}>{lead.source}</span>
         )}
       </div>
-
-      {/* Quick interest popup */}
-      {showInterestPopup && !isGhost && (
-        <QuickInterestPopup
-          lead={lead}
-          onClose={() => setShowInterestPopup(false)}
-          onSave={onInterestSave}
-        />
-      )}
     </div>
   );
 }

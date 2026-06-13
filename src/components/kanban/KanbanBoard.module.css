@@ -641,124 +641,92 @@
 }
 
 /* ────────────────────────────────────
-   QUICK INTEREST POPUP
+   INTEREST ROW — INLINE EDIT
 ──────────────────────────────────── */
-.quickInterestPopup {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  z-index: 50;
+.leadInterestRowEditing {
   background: #fff;
-  border: 1.5px solid var(--primary);
-  border-radius: 0.875rem;
-  box-shadow:
-    0 10px 32px rgba(0, 0, 0, 0.16),
-    0 0 0 3px rgba(79, 70, 229, 0.1);
-  padding: 0.75rem;
-  animation: fadeUp 120ms var(--ease-out) both;
-  cursor: default;
-}
-
-.quickInterestHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 0.55rem;
-}
-
-.quickInterestClose {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1.1rem;
-  line-height: 1;
-  color: var(--text-tertiary);
-  padding: 0.1rem 0.25rem;
-  border-radius: 0.35rem;
-  transition: all 100ms;
-}
-
-.quickInterestClose:hover {
-  color: var(--text-primary);
-  background: var(--border-light);
-}
-
-.quickInterestInput {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 0.45rem 0.65rem;
-  border-radius: 0.55rem;
-  border: 1.5px solid var(--border);
-  background: #f8fafc;
-  color: var(--text-primary);
-  font-size: 0.8125rem;
-  outline: none;
-  transition:
-    border-color 120ms,
-    background 120ms;
-  font-family: inherit;
-}
-
-.quickInterestInput:focus {
   border-color: var(--primary);
-  background: #fff;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.08);
+  box-shadow: 0 0 0 2.5px rgba(79, 70, 229, 0.12);
+  padding: 0.2rem 0.35rem;
+  gap: 0.2rem;
 }
 
-.quickInterestActions {
-  display: flex;
-  gap: 0.4rem;
-  justify-content: flex-end;
-  margin-top: 0.55rem;
-}
-
-.quickInterestCancel {
-  padding: 0.35rem 0.75rem;
-  border-radius: 0.55rem;
-  border: 1.5px solid var(--border);
+.interestInlineInput {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
   background: transparent;
-  color: var(--text-secondary);
-  font-size: 0.76rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 120ms;
+  font-size: 0.73rem;
+  font-weight: 500;
+  color: var(--text-primary);
   font-family: inherit;
+  padding: 0;
+  line-height: 1.4;
 }
 
-.quickInterestCancel:hover {
-  background: var(--border-light);
-  border-color: #cbd5e1;
+.interestInlineInput::placeholder {
+  color: var(--text-tertiary);
+  font-style: italic;
 }
 
-.quickInterestSave {
-  padding: 0.35rem 0.875rem;
-  border-radius: 0.55rem;
+.interestInlineInput:disabled {
+  opacity: 0.6;
+}
+
+.interestInlineSave {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 0.3rem;
   border: none;
   background: var(--primary);
   color: #fff;
-  font-size: 0.76rem;
-  font-weight: 700;
+  font-size: 0.72rem;
+  font-weight: 800;
   cursor: pointer;
-  transition: all 120ms;
-  font-family: inherit;
-  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.3);
+  flex-shrink: 0;
+  transition: background 120ms, transform 120ms;
+  line-height: 1;
 }
 
-.quickInterestSave:hover {
+.interestInlineSave:hover {
   background: var(--primary-hover, #4338ca);
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
-  transform: translateY(-1px);
+  transform: scale(1.1);
 }
 
-.quickInterestSave:disabled {
-  opacity: 0.6;
+.interestInlineSave:disabled {
+  opacity: 0.55;
   cursor: not-allowed;
   transform: none;
 }
+
+.interestInlineCancel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 0.3rem;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: 0.65rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 120ms, color 120ms, transform 120ms;
+  line-height: 1;
+}
+
+.interestInlineCancel:hover {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fca5a5;
+  transform: scale(1.1);
+}
+
 
 /* ────────────────────────────────────
    GHOST CARD (follow-up pendente)
