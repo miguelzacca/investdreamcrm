@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 import { Lead, FunnelStage } from '@prisma/client';
 import { updateLeadStage, updateLead } from '@/app/leads/actions';
 import { TemperatureBadge } from '@/components/ui/Badge';
@@ -59,6 +60,8 @@ function LeadCard({
   lead, isDragging, isGhost = false, stageColor,
   onDragStart, onDragEnd, onInterestSave, onTemperatureCycle
 }: LeadCardProps) {
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === 'ADMIN';
   const [isEditingInterest, setIsEditingInterest] = useState(false);
   const [isExpandedText, setIsExpandedText] = useState(false);
   const [interestDraft, setInterestDraft] = useState('');
@@ -269,10 +272,12 @@ function LeadCard({
             <TemperatureBadge temperature={lead.temperature} />
           </button>
 
-          {lead.firstContactedAt ? (
-            <span className={styles.contactedBadge}>✓ Contatado</span>
-          ) : (
-            <span className={styles.pendingBadge}>⏳ Pendente</span>
+          {isAdmin && (
+            lead.firstContactedAt ? (
+              <span className={styles.contactedBadge}>✓ Contatado</span>
+            ) : (
+              <span className={styles.pendingBadge}>⏳ Pendente</span>
+            )
           )}
         </div>
 
