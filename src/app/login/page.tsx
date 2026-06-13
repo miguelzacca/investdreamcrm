@@ -30,22 +30,47 @@ const STATS = [
 ];
 
 /* ─────────────────────────────────────────────
-   Framer Motion Variants (Dismantle)
+   Cinematic Framer Motion Variants
 ───────────────────────────────────────────── */
-const dismantleVariants = {
-  initial: { opacity: 1, scale: 1, filter: 'blur(0px)' },
+const leftPanelVariants = {
+  initial: { opacity: 1, scale: 1, rotateY: 0, filter: 'blur(0px)' },
+  exit: {
+    opacity: 0,
+    scale: 0.75,
+    rotateY: 25,
+    rotateX: 15,
+    filter: 'blur(24px)',
+    transition: { duration: 1.4, ease: [0.32, 0, 0.67, 0] as const }
+  }
+};
+
+const formItemVariants = {
+  initial: { opacity: 1, x: 0, scale: 1, filter: 'blur(0px)' },
   exit: (custom: number) => ({
     opacity: 0,
-    scale: 0.2,
-    filter: 'blur(10px)',
-    x: (custom % 2 === 0 ? 1 : -1) * (Math.random() * 300 + 100),
-    y: (custom % 3 === 0 ? -1 : 1) * (Math.random() * 300 + 100),
-    rotate: (Math.random() * 90 - 45),
+    x: custom % 2 === 0 ? 400 : -400,
+    scale: 0.8,
+    filter: 'blur(15px)',
     transition: {
-      duration: 1.0,
-      ease: [0.6, -0.05, 0.01, 0.99] as const // epic ease
+      duration: 0.9,
+      delay: custom * 0.12,
+      ease: [0.36, 0, 0.66, -0.56] as const // Anticipation back-in
     }
   })
+};
+
+const logoClimaxVariants = {
+  initial: { opacity: 1, scale: 1, filter: 'blur(0px)' },
+  exit: {
+    scale: 45,
+    opacity: 0,
+    filter: 'blur(30px)',
+    transition: {
+      duration: 1.8,
+      delay: 0.5,
+      ease: [0.64, 0, 0.78, 0] as const
+    }
+  }
 };
 
 /* ═══════════════════════════════════════════════
@@ -113,12 +138,12 @@ export default function LoginPage() {
         setError(res.error);
         setIsLoading(false);
       } else {
-        // Success -> trigger dismantle animation
+        // Success -> trigger cinematic animation
         setIsSuccess(true);
         setTimeout(() => {
           router.push('/dashboard');
           router.refresh();
-        }, 1200); // Wait for the epic animation
+        }, 2200); // Wait for the epic 2.2s animation climax
       }
     } catch (err) {
       console.error(err);
@@ -135,32 +160,32 @@ export default function LoginPage() {
         {!isSuccess && (
           <>
             {/* ══════════════════════════════════════
-                LEFT — Brand panel
+                LEFT — Brand panel (Abyss Fall)
             ══════════════════════════════════════ */}
             <motion.div 
               className={styles.left}
               key="login-left"
-              custom={1}
-              variants={dismantleVariants}
+              variants={leftPanelVariants}
               initial="initial"
               exit="exit"
+              style={{ perspective: 1000 }}
             >
               {/* Grain texture */}
               <div className={styles.grain} aria-hidden />
 
               {/* Background mesh glows */}
-              <motion.div custom={2} variants={dismantleVariants} initial="initial" exit="exit" className={styles.glow1} aria-hidden />
-              <motion.div custom={3} variants={dismantleVariants} initial="initial" exit="exit" className={styles.glow2} aria-hidden />
-              <motion.div custom={4} variants={dismantleVariants} initial="initial" exit="exit" className={styles.glow3} aria-hidden />
+              <div className={styles.glow1} aria-hidden />
+              <div className={styles.glow2} aria-hidden />
+              <div className={styles.glow3} aria-hidden />
 
               {/* Top badge */}
-              <motion.div custom={5} variants={dismantleVariants} initial="initial" exit="exit" className={styles.liveBadge}>
+              <div className={styles.liveBadge}>
                 <span className={styles.liveDot} />
                 Sistema Ativo
-              </motion.div>
+              </div>
 
               {/* HERO TEXT */}
-              <motion.div custom={6} variants={dismantleVariants} initial="initial" exit="exit" className={styles.hero} ref={heroRef}>
+              <div className={styles.hero} ref={heroRef}>
                 <div className={styles.heroRow}>
                   <span className={styles.heroOutline}>INVEST</span>
                 </div>
@@ -170,10 +195,10 @@ export default function LoginPage() {
                 <div className={styles.heroTag}>
                   CRM — Gestão Exclusiva de Aluguéis Anuais
                 </div>
-              </motion.div>
+              </div>
 
               {/* ── Animated SVG chart ── */}
-              <motion.div custom={7} variants={dismantleVariants} initial="initial" exit="exit" className={styles.chartOuter}>
+              <div className={styles.chartOuter}>
                 <div className={styles.chartYAxis}>
             {['+24%', '+16%', '+8%', '0%'].map((l) => (
               <span key={l}>{l}</span>
@@ -240,48 +265,25 @@ export default function LoginPage() {
               ))}
             </div>
           </div>
-        </motion.div>
-
-        {/* ── Floating stat cards ── */}
-        {/* {STATS.map((s, i) => (
-          <div
-            key={i}
-            className={`${styles.floatCard} ${styles[`floatCard${i}`]}`}
-            ref={[card0, card1, card2][i]}
-            style={{ transitionDelay: s.delay } as React.CSSProperties}
-          >
-            <p className={styles.floatLabel}>{s.label}</p>
-            <p className={styles.floatValue}>{s.value}</p>
-            <p className={styles.floatBadge} style={{ color: s.color }}>
-              {s.badge}
-            </p>
-          </div>
-        ))} */}
+        </div>
 
 
           {/* Bottom strip */}
-          <motion.footer custom={8} variants={dismantleVariants} initial="initial" exit="exit" className={styles.leftFooter}>
+          <footer className={styles.leftFooter}>
             <span className={styles.footerDot} />
             © 2025 Invest Dream — Plataforma exclusiva
-          </motion.footer>
+          </footer>
         </motion.div>
 
         {/* ══════════════════════════════════════
             RIGHT — Form panel
         ══════════════════════════════════════ */}
-        <motion.div 
-          className={styles.right}
-          key="login-right"
-          custom={9}
-          variants={dismantleVariants}
-          initial="initial"
-          exit="exit"
-        >
+        <div className={styles.right}>
           {/* Subtle corner decoration */}
           <div className={styles.cornerDeco} aria-hidden />
 
-          {/* Logo */}
-          <motion.div custom={10} variants={dismantleVariants} initial="initial" exit="exit" className={styles.rightHeader}>
+          {/* Climax Logo */}
+          <motion.div variants={logoClimaxVariants} initial="initial" exit="exit" className={styles.rightHeader}>
             <div className={styles.logoChip}>
               <Image src="/image.png" alt="Invest Dream" width={26} height={26} />
             </div>
@@ -289,8 +291,8 @@ export default function LoginPage() {
           </motion.div>
 
           {/* Form container */}
-          <motion.div custom={11} variants={dismantleVariants} initial="initial" exit="exit" className={styles.formWrap}>
-            <div className={styles.formHead}>
+          <div className={styles.formWrap}>
+            <motion.div custom={0} variants={formItemVariants} initial="initial" exit="exit" className={styles.formHead}>
               <p className={styles.formEyebrow}>Portal de Gestão</p>
               <h1 className={styles.formTitle}>
                 Acesse<br />sua conta
@@ -298,25 +300,25 @@ export default function LoginPage() {
               <p className={styles.formDesc}>
                 Plataforma de gestão exclusiva para parceiros certificados.
               </p>
-            </div>
+            </motion.div>
 
             {/* Divider */}
-            <div className={styles.divider} />
+            <motion.div custom={1} variants={formItemVariants} initial="initial" exit="exit" className={styles.divider} />
 
             {error && (
-            <div className={styles.errorBox} role="alert">
+            <motion.div custom={2} variants={formItemVariants} initial="initial" exit="exit" className={styles.errorBox} role="alert">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <circle cx="7" cy="7" r="6.5" stroke="#be123c" />
                 <path d="M7 4v3.5" stroke="#be123c" strokeWidth="1.5" strokeLinecap="round" />
                 <circle cx="7" cy="10" r="0.75" fill="#be123c" />
               </svg>
               {error}
-            </div>
+            </motion.div>
           )}
 
           <form onSubmit={handleSubmit} className={styles.form} noValidate>
             {/* Username field */}
-            <div className={styles.field}>
+            <motion.div custom={3} variants={formItemVariants} initial="initial" exit="exit" className={styles.field}>
               <label htmlFor="login-username" className={styles.fieldLabel}>
                 Usuário
               </label>
@@ -339,10 +341,10 @@ export default function LoginPage() {
                   autoComplete="username"
                 />
               </div>
-            </div>
+            </motion.div>
 
             {/* Password field */}
-            <div className={styles.field}>
+            <motion.div custom={4} variants={formItemVariants} initial="initial" exit="exit" className={styles.field}>
               <label htmlFor="login-password" className={styles.fieldLabel}>
                 Senha
               </label>
@@ -366,10 +368,11 @@ export default function LoginPage() {
                   autoComplete="current-password"
                 />
               </div>
-            </div>
+            </motion.div>
 
             {/* Submit */}
-            <button
+            <motion.button
+              custom={5} variants={formItemVariants} initial="initial" exit="exit"
               type="submit"
               disabled={isLoading}
               className={styles.submitBtn}
@@ -390,10 +393,10 @@ export default function LoginPage() {
                   </>
                 )}
               </span>
-            </button>
+            </motion.button>
           </form>
 
-            <motion.div custom={12} variants={dismantleVariants} initial="initial" exit="exit" className={styles.trust}>
+            <motion.div custom={6} variants={formItemVariants} initial="initial" exit="exit" className={styles.trust}>
               <div className={styles.trustItem}>
                 <span className={styles.trustDot} style={{ background: '#10b981' }} />
                 Conexão SSL segura
@@ -404,9 +407,22 @@ export default function LoginPage() {
                 Acesso restrito
               </div>
             </motion.div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
           </>
+        )}
+      </AnimatePresence>
+
+      {/* Epic Flash out */}
+      <AnimatePresence>
+        {isSuccess && (
+          <motion.div
+            key="flash-white"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.8, duration: 0.4 }}
+            style={{ position: 'fixed', inset: 0, backgroundColor: '#ffffff', zIndex: 9999, pointerEvents: 'none' }}
+          />
         )}
       </AnimatePresence>
     </div>

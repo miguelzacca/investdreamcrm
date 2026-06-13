@@ -15,7 +15,7 @@ import {
   BarChart3,
   ChevronRight,
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { MobileAdminDashboard } from '@/components/mobile/MobileAdminDashboard';
 import { MobileUserDashboard } from '@/components/mobile/MobileUserDashboard';
 import { AiChat } from '@/components/ai/AiChat';
@@ -54,37 +54,46 @@ export function AppLayout({ children, title }: AppLayoutProps) {
       ]
     : [];
 
-  // Framer Motion variants
+  // Framer Motion variants (Cinematic Spring)
   const layoutVariants = {
-    hidden: { opacity: 0 },
+    hidden: { opacity: 1 },
     show: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.1,
+        staggerChildren: 0.12,
+        delayChildren: 0.5,
       },
     },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20, filter: 'blur(4px)' },
+    hidden: { opacity: 0, y: 60, scale: 0.85, filter: 'blur(12px)' },
     show: {
       opacity: 1,
       y: 0,
+      scale: 1,
       filter: 'blur(0px)',
       transition: {
-        duration: 0.7,
-        ease: [0.16, 1, 0.3, 1] as const, // easeOutQuint
+        type: 'spring',
+        stiffness: 110,
+        damping: 14,
+        mass: 1.2
       },
     },
   };
 
   const sidebarVariants = {
-    hidden: { opacity: 0, x: -50 },
+    hidden: { opacity: 0, x: -80, rotateY: -45 },
     show: {
       opacity: 1,
       x: 0,
-      transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] as const }
+      rotateY: 0,
+      transition: { 
+        type: 'spring', 
+        stiffness: 90, 
+        damping: 16, 
+        delay: 0.2 
+      }
     }
   };
 
@@ -110,7 +119,16 @@ export function AppLayout({ children, title }: AppLayoutProps) {
         variants={layoutVariants}
         initial="hidden"
         animate="show"
+        style={{ perspective: 1200 }}
       >
+        {/* Epic Flash In */}
+        <motion.div
+          initial={{ opacity: 1 }}
+          animate={{ opacity: 0 }}
+          transition={{ duration: 1.2, ease: 'easeOut' }}
+          style={{ position: 'fixed', inset: 0, backgroundColor: '#ffffff', zIndex: 9999, pointerEvents: 'none' }}
+        />
+
         {/* ── Sidebar ── */}
         <motion.aside variants={sidebarVariants} className={styles.sidebar}>
 
