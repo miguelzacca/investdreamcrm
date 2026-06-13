@@ -7,6 +7,7 @@ import { updateLeadStage, updateLead } from '@/app/leads/actions';
 import { TemperatureBadge } from '@/components/ui/Badge';
 import { CloseDealModal } from '@/components/modals/CloseDealModal';
 import { LeadExpectationModal } from '@/components/modals/LeadExpectationModal';
+import { FollowUpModal } from '@/components/modals/FollowUpModal';
 import { trackLeadContact } from '@/lib/tracking';
 import { KanbanPopups } from './KanbanPopups';
 import styles from './KanbanBoard.module.css';
@@ -173,6 +174,8 @@ function LeadCard({
       style={{ '--stage-color': stageColor } as React.CSSProperties}
       title={isGhost && lead.followUpDate ? `Follow-up: ${new Date(lead.followUpDate).toLocaleDateString('pt-BR')}` : undefined}
     >
+
+
       {/* Ghost banner */}
       {isGhost && (
         <div className={styles.ghostBanner}>
@@ -335,6 +338,7 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
   const [pendingCloseDealLeadId, setPendingCloseDealLeadId] = useState<string | null>(null);
   const [pendingExpectationLeadId, setPendingExpectationLeadId] = useState<string | null>(null);
   const [pendingExpectationStage, setPendingExpectationStage] = useState<FunnelStage | null>(null);
+  const [pendingFollowUpLeadId, setPendingFollowUpLeadId] = useState<string | null>(null);
 
   const toggleExpandColumn = (stageId: string) => {
     setExpandedColumns(prev => {
@@ -494,16 +498,32 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
 
                 {/* Active leads */}
                 {activeLeads.map(lead => (
-                  <LeadCard
-                    key={lead.id}
-                    lead={lead}
-                    isDragging={draggedLeadId === lead.id}
-                    stageColor={stage.color}
-                    onDragStart={handleDragStart}
-                    onDragEnd={handleDragEnd}
-                    onInterestSave={handleInterestSave}
-                    onTemperatureCycle={handleTemperatureCycle}
-                  />
+                  <div key={lead.id} className={styles.cardWrapper}>
+                    <LeadCard
+                      lead={lead}
+                      isDragging={draggedLeadId === lead.id}
+                      stageColor={stage.color}
+                      onDragStart={handleDragStart}
+                      onDragEnd={handleDragEnd}
+                      onInterestSave={handleInterestSave}
+                      onTemperatureCycle={handleTemperatureCycle}
+                    />
+                    <button
+                      type="button"
+                      className={styles.followUpHoverBtn}
+                      title="Agendar Follow-up"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        setPendingFollowUpLeadId(lead.id);
+                      }}
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                      </svg>
+                    </button>
+                  </div>
                 ))}
 
                 {/* Ghost leads */}
@@ -565,6 +585,20 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
             ));
             setPendingExpectationLeadId(null);
             setPendingExpectationStage(null);
+          }}
+        />
+      )}
+
+      {pendingFollowUpLeadId && (
+        <FollowUpModal
+          isOpen={true}
+          onClose={() => setPendingFollowUpLeadId(null)}
+          leadId={pendingFollowUpLeadId}
+          onSuccess={() => {
+            setLeads(prev => prev.map(l =>
+              l.id === pendingFollowUpLeadId ? { ...l, isFollowUp: true, funnelStage: 'NEW_LEAD' } : l
+            ));
+            setPendingFollowUpLeadId(null);
           }}
         />
       )}

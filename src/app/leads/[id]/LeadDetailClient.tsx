@@ -59,6 +59,7 @@ const getAvatarColor = (name: string) => {
 };
 
 import { CloseDealModal } from '@/components/modals/CloseDealModal';
+import { FollowUpModal } from '@/components/modals/FollowUpModal';
 
 /* ── Archive Modal ── */
 interface ArchiveModalProps {
@@ -100,65 +101,6 @@ function ArchiveModal({ isOpen, onClose, onConfirm, isPending }: ArchiveModalPro
           <Button type="submit" variant="danger" isLoading={isPending} disabled={!reason.trim()}>
             <Archive size={14} style={{ marginRight: '0.25rem' }} />
             Arquivar Lead
-          </Button>
-        </div>
-      </form>
-    </Modal>
-  );
-}
-
-/* ── Follow-up Modal ── */
-interface FollowUpModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: (date: Date) => void;
-  isPending: boolean;
-}
-
-function FollowUpModal({ isOpen, onClose, onConfirm, isPending }: FollowUpModalProps) {
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const year  = tomorrow.getFullYear();
-  const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
-  const day   = String(tomorrow.getDate()).padStart(2, '0');
-  const tomorrowStr = `${year}-${month}-${day}`;
-
-  const [dateStr, setDateStr] = useState(tomorrowStr);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!dateStr) return;
-    onConfirm(new Date(dateStr + 'T00:00:00'));
-  };
-
-  return (
-    <Modal isOpen={isOpen} onClose={onClose} title="🔁 Agendar Follow-up">
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        <div className={styles.modalInfoBox} style={{ borderLeftColor: '#3b82f6' }}>
-          <Info size={14} style={{ color: '#3b82f6', flexShrink: 0 }} />
-          <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
-            O lead será removido do kanban e voltará automaticamente para{' '}
-            <strong>Novo Lead</strong> na data selecionada.
-          </p>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
-          <label style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-            Data do follow-up *
-          </label>
-          <input
-            type="date"
-            value={dateStr}
-            min={tomorrowStr}
-            onChange={(e) => setDateStr(e.target.value)}
-            required
-            className={styles.dateInput}
-          />
-        </div>
-        <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
-          <Button type="button" variant="secondary" onClick={onClose} disabled={isPending}>Cancelar</Button>
-          <Button type="submit" isLoading={isPending} disabled={!dateStr}>
-            <Clock size={14} style={{ marginRight: '0.25rem' }} />
-            Confirmar Follow-up
           </Button>
         </div>
       </form>
@@ -251,12 +193,7 @@ export default function LeadDetailClient({ lead, isAdmin }: { lead: LeadWithDeal
     });
   };
 
-  const handleFollowUpConfirm = (date: Date) => {
-    startTransition(async () => {
-      await scheduleFollowUp(lead.id, date);
-      router.push('/leads');
-    });
-  };
+
 
   const handleCopyPhone = () => {
     navigator.clipboard.writeText(lead.whatsApp);
@@ -601,7 +538,7 @@ export default function LeadDetailClient({ lead, isAdmin }: { lead: LeadWithDeal
       {/* ── Modals ── */}
       <CloseDealModal isOpen={isDealModalOpen} onClose={() => setIsDealModalOpen(false)} leadId={lead.id} />
       <ArchiveModal  isOpen={isArchiveModalOpen}  onClose={() => setIsArchiveModalOpen(false)}  onConfirm={handleArchiveConfirm}  isPending={isPending} />
-      <FollowUpModal isOpen={isFollowUpModalOpen} onClose={() => setIsFollowUpModalOpen(false)} onConfirm={handleFollowUpConfirm} isPending={isPending} />
+      <FollowUpModal isOpen={isFollowUpModalOpen} onClose={() => setIsFollowUpModalOpen(false)} leadId={lead.id} onSuccess={() => router.push('/leads')} />
       <EditLeadModal isOpen={isEditModalOpen}     onClose={() => setIsEditModalOpen(false)}     lead={lead} isAdmin={isAdmin} />
     </div>
   );
