@@ -293,3 +293,84 @@ input, select, textarea { font-family: inherit; }
   background: var(--primary-light);
   color: var(--primary-dark);
 }
+
+/* ════════════════════════════════════════════════
+   REACT 19 VIEW TRANSITIONS
+   (activated by experimental.viewTransition: true)
+
+   We lock the sidebar so it never participates
+   in the route-level view transition — it should
+   only animate via Framer Motion's spring physics.
+════════════════════════════════════════════════ */
+::view-transition-group(sidebar-lock) {
+  animation: none;
+  z-index: 10;
+}
+::view-transition-old(sidebar-lock),
+::view-transition-new(sidebar-lock) {
+  animation: none;
+}
+
+/* ── Dashboard reveal keyframes ─────────────── */
+@keyframes dashboardSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(56px) scale(0.96);
+    filter: blur(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0px);
+  }
+}
+
+@keyframes sidebarSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-80px) skewX(2deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) skewX(0deg);
+  }
+}
+
+/* ════════════════════════════════════════════════
+   ACCESSIBILITY — prefers-reduced-motion
+
+   All Framer Motion reduced variants are handled
+   in JS (useReducedMotion hook), but we also kill
+   any CSS animations for belt-and-suspenders safety.
+════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  /* Kill view-transition animations */
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay:    0s !important;
+  }
+
+  /* Kill all CSS keyframe animations */
+  *,
+  *::before,
+  *::after {
+    animation-duration:        0.01ms !important;
+    animation-iteration-count: 1      !important;
+    transition-duration:       0.01ms !important;
+    scroll-behavior:           auto   !important;
+  }
+}
+
+/* ════════════════════════════════════════════════
+   TRANSITION OVERLAY GOOEY — SVG filter hint
+   
+   The PageTransitionOverlay applies filter:url(#gooey-edge)
+   on the dark circle. No extra CSS needed here — the
+   SVG filter is inline in the component. This comment
+   documents the design intent: the gooey filter creates
+   a liquid edge on the expanding clip-path circle,
+   giving it an organic quality rather than a hard circle cut.
+════════════════════════════════════════════════ */
+
