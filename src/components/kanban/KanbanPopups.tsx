@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSession } from 'next-auth/react';
 import styles from './KanbanPopups.module.css';
 
 /* ─────────────────────────────────────────
@@ -44,9 +45,10 @@ function dismissFor(dismissKey: string, ms: number) {
 ───────────────────────────────────────── */
 interface FeedbackPopupProps {
   onClose: () => void;
+  userName?: string;
 }
 
-function FeedbackPopup({ onClose }: FeedbackPopupProps) {
+function FeedbackPopup({ onClose, userName }: FeedbackPopupProps) {
   const [stars, setStars] = useState(0);
   const [hoveredStar, setHoveredStar] = useState(0);
   const [suggestion, setSuggestion] = useState('');
@@ -60,7 +62,7 @@ function FeedbackPopup({ onClose }: FeedbackPopupProps) {
       const res = await fetch('/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ stars, suggestion }),
+        body: JSON.stringify({ stars, suggestion, userName }),
       });
       if (!res.ok) throw new Error();
       setStatus('success');
@@ -71,24 +73,16 @@ function FeedbackPopup({ onClose }: FeedbackPopupProps) {
     }
   }
 
-  function handleDismiss() {
-    dismissFor(FEEDBACK_DISMISSED_KEY, 7 * 24 * 60 * 60 * 1000); // snooze 7 dias
-    markShown(FEEDBACK_KEY);
-    onClose();
-  }
-
   const displayStar = hoveredStar || stars;
 
   return (
-    <div className={styles.overlay} onClick={handleDismiss}>
+    <div className={styles.overlay}>
       <div
         className={styles.popupCard}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-label="Popup de feedback"
       >
-        {/* Dismiss */}
-        <button className={styles.closeBtn} onClick={handleDismiss} aria-label="Fechar">×</button>
 
         {status === 'success' ? (
           <div className={styles.successState}>
@@ -160,9 +154,6 @@ function FeedbackPopup({ onClose }: FeedbackPopupProps) {
               )}
 
               <div className={styles.popupActions}>
-                <button type="button" className={styles.snoozeBtn} onClick={handleDismiss}>
-                  Agora não
-                </button>
                 <button
                   type="submit"
                   className={styles.submitBtn}
@@ -237,6 +228,7 @@ function AIChatPopup({ onClose }: AIChatPopupProps) {
    ?popup=aichat    → força o toast do Chat IA
 ───────────────────────────────────────── */
 export function KanbanPopups() {
+  const { data: session } = useSession();
   const [showFeedback, setShowFeedback] = useState(false);
   const [showAIChat, setShowAIChat]     = useState(false);
 
@@ -301,7 +293,7 @@ export function KanbanPopups() {
 
   return (
     <>
-      {showFeedback && <FeedbackPopup onClose={handleFeedbackClose} />}
+      {showFeedback && <FeedbackPopup onClose={handleFeedbackClose} userName={session?.user?.name || session?.user?.username || ''} />}
       {showAIChat   && <AIChatPopup  onClose={handleAIChatClose}   />}
     </>
   );
