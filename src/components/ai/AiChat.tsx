@@ -53,6 +53,20 @@ export function AiChat() {
     }
   }, [isOpen, messages.length]);
 
+  // Listen for external open event (e.g. from Kanban card AI button)
+  useEffect(() => {
+    function handleExternalOpen(e: Event) {
+      const detail = (e as CustomEvent<{ message?: string }>).detail;
+      setIsOpen(true);
+      if (detail?.message) {
+        // slight delay so the panel renders before we set input
+        setTimeout(() => setInput(detail.message!), 50);
+      }
+    }
+    window.addEventListener('ai-chat-open', handleExternalOpen);
+    return () => window.removeEventListener('ai-chat-open', handleExternalOpen);
+  }, []);
+
   useEffect(() => {
     scrollToBottom();
   }, [messages, isTyping]);

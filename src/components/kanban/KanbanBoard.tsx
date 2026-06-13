@@ -508,6 +508,7 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
                       onInterestSave={handleInterestSave}
                       onTemperatureCycle={handleTemperatureCycle}
                     />
+                    {/* Follow-up floating button */}
                     <button
                       type="button"
                       className={styles.followUpHoverBtn}
@@ -521,6 +522,25 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                         <circle cx="12" cy="12" r="10"></circle>
                         <polyline points="12 6 12 12 16 14"></polyline>
+                      </svg>
+                    </button>
+                    {/* AI floating button */}
+                    <button
+                      type="button"
+                      className={styles.aiHoverBtn}
+                      title="Abrir IA para este lead"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        const msg = `Gere uma mensagem de follow-up persuasiva para o lead ${lead.name}.`;
+                        window.dispatchEvent(new CustomEvent('ai-chat-open', { detail: { message: msg } }));
+                      }}
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2z"/>
+                        <path d="M12 16v-4"/>
+                        <path d="M12 8h.01"/>
+                        <path d="M9.5 9.5C9.5 8.12 10.62 7 12 7s2.5 1.12 2.5 2.5c0 1.5-2.5 3-2.5 3"/>
                       </svg>
                     </button>
                   </div>
