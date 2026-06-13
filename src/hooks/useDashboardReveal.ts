@@ -72,11 +72,10 @@ export const sidebarReveal = {
 };
 
 export const headerReveal = {
-  hidden: { opacity: 0, y: -44, filter: "blur(8px)" },
+  hidden: { opacity: 0, y: -44 },
   show: {
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
     transition: {
       type: "spring" as const,
       stiffness: 120,
@@ -101,13 +100,11 @@ export function cardReveal(index: number, reducedMotion = false) {
       opacity: 0,
       y: 56,
       scale: 0.94,
-      filter: "blur(10px)",
     },
     show: {
       opacity: 1,
       y: 0,
       scale: 1,
-      filter: "blur(0px)",
       transition: {
         type: "spring" as const,
         stiffness: 100,
@@ -130,11 +127,10 @@ export const contentReveal = {
 };
 
 export const contentItemReveal = {
-  hidden: { opacity: 0, y: 40, filter: "blur(6px)" },
+  hidden: { opacity: 0, y: 40 },
   show: {
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
     transition: {
       type: "spring" as const,
       stiffness: 110,

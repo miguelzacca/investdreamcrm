@@ -47,13 +47,12 @@ const BACK_IN  = [0.55, 0, 1.00, 0.45] as const;
 
 /* ── Variants ── */
 const leftPanelVariants = {
-  initial: { opacity: 1, scale: 1, x: 0, filter: "blur(0px)" },
+  initial: { opacity: 1, scale: 1, x: 0 },
   exit: {
     opacity: 0,
     scale: 0.78,
     x: -60,
     rotateY: -18,
-    filter: "blur(20px)",
     transition: { duration: 1.0, ease: EXPO_IN },
   },
 };
@@ -64,9 +63,8 @@ function formItemExit(index: number) {
   return {
     opacity: 0,
     x: directions[index % directions.length],
-    y: index === 6 ? 40 : 0,      // trust row falls down instead
+    y: index === 6 ? 40 : 0,
     scale: 0.88,
-    filter: "blur(12px)",
     transition: {
       duration: 0.75,
       delay: index * 0.065,
@@ -76,11 +74,10 @@ function formItemExit(index: number) {
 }
 
 const logoExitVariants = {
-  initial: { opacity: 1, scale: 1, filter: "blur(0px)" },
+  initial: { opacity: 1, scale: 1 },
   exit: {
     scale: 36,
     opacity: 0,
-    filter: "blur(40px)",
     transition: { duration: 1.6, delay: 0.35, ease: EXPO_IN },
   },
 };
@@ -343,7 +340,7 @@ export default function LoginPage() {
                 {/* Heading block */}
                 <motion.div
                   className={styles.formHead}
-                  initial={{ opacity: 1, x: 0, scale: 1, filter: "blur(0px)" }}
+                  initial={{ opacity: 1, x: 0, scale: 1 }}
                   exit={formItemExit(0)}
                 >
                   <p className={styles.formEyebrow}>Portal de Gestão</p>
@@ -358,7 +355,7 @@ export default function LoginPage() {
                 {/* Divider */}
                 <motion.div
                   className={styles.divider}
-                  initial={{ opacity: 1, x: 0, scale: 1, filter: "blur(0px)" }}
+                  initial={{ opacity: 1, x: 0, scale: 1 }}
                   exit={formItemExit(1)}
                 />
 
@@ -383,7 +380,7 @@ export default function LoginPage() {
                   {/* Username */}
                   <motion.div
                     className={styles.field}
-                    initial={{ opacity: 1, x: 0, scale: 1, filter: "blur(0px)" }}
+                    initial={{ opacity: 1, x: 0, scale: 1 }}
                     exit={formItemExit(2)}
                   >
                     <label htmlFor="login-username" className={styles.fieldLabel}>
@@ -413,7 +410,7 @@ export default function LoginPage() {
                   {/* Password */}
                   <motion.div
                     className={styles.field}
-                    initial={{ opacity: 1, x: 0, scale: 1, filter: "blur(0px)" }}
+                    initial={{ opacity: 1, x: 0, scale: 1 }}
                     exit={formItemExit(3)}
                   >
                     <label htmlFor="login-password" className={styles.fieldLabel}>
@@ -447,7 +444,7 @@ export default function LoginPage() {
                     disabled={isLoading}
                     className={`${styles.submitBtn} ${isSuccess ? styles.submitBtnSuccess : ""}`}
                     id="login-submit"
-                    initial={{ opacity: 1, x: 0, scale: 1, filter: "blur(0px)" }}
+                    initial={{ opacity: 1, x: 0, scale: 1 }}
                     exit={formItemExit(4)}
                     /* Tactile press feedback */
                     whileTap={!isLoading ? { scale: 0.97 } : {}}
@@ -495,7 +492,7 @@ export default function LoginPage() {
                 {/* Trust row */}
                 <motion.div
                   className={styles.trust}
-                  initial={{ opacity: 1, x: 0, scale: 1, filter: "blur(0px)" }}
+                  initial={{ opacity: 1, x: 0, scale: 1 }}
                   exit={formItemExit(6)}
                 >
                   <div className={styles.trustItem}>
