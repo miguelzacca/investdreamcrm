@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import styles from './Login.module.css';
 
 /* ─────────────────────────────────────────────
@@ -28,6 +29,25 @@ const STATS = [
   { label: 'Captação',   value: '+24.3%',   badge: 'Trimestral',   color: '#fbbf24', delay: '0.90s' },
 ];
 
+/* ─────────────────────────────────────────────
+   Framer Motion Variants (Dismantle)
+───────────────────────────────────────────── */
+const dismantleVariants = {
+  initial: { opacity: 1, scale: 1, filter: 'blur(0px)' },
+  exit: (custom: number) => ({
+    opacity: 0,
+    scale: 0.2,
+    filter: 'blur(10px)',
+    x: (custom % 2 === 0 ? 1 : -1) * (Math.random() * 300 + 100),
+    y: (custom % 3 === 0 ? -1 : 1) * (Math.random() * 300 + 100),
+    rotate: (Math.random() * 90 - 45),
+    transition: {
+      duration: 1.0,
+      ease: [0.6, -0.05, 0.01, 0.99] as const // epic ease
+    }
+  })
+};
+
 /* ═══════════════════════════════════════════════
    COMPONENT
 ═══════════════════════════════════════════════ */
@@ -38,6 +58,7 @@ export default function LoginPage() {
   const [password,  setPassword]  = useState('');
   const [error,     setError]     = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [mounted,   setMounted]   = useState(false);
   const [revealed,  setRevealed]  = useState(false);
 
@@ -90,14 +111,18 @@ export default function LoginPage() {
       const res = await signIn('credentials', { username, password, redirect: false });
       if (res?.error) {
         setError(res.error);
+        setIsLoading(false);
       } else {
-        router.push('/dashboard');
-        router.refresh();
+        // Success -> trigger dismantle animation
+        setIsSuccess(true);
+        setTimeout(() => {
+          router.push('/dashboard');
+          router.refresh();
+        }, 1200); // Wait for the epic animation
       }
     } catch (err) {
       console.error(err);
       setError('Ocorreu um erro ao fazer login. Tente novamente.');
-    } finally {
       setIsLoading(false);
     }
   };
@@ -106,41 +131,50 @@ export default function LoginPage() {
 
   return (
     <div className={`${styles.root} ${revealed ? styles.rootIn : ''}`}>
+      <AnimatePresence>
+        {!isSuccess && (
+          <>
+            {/* ══════════════════════════════════════
+                LEFT — Brand panel
+            ══════════════════════════════════════ */}
+            <motion.div 
+              className={styles.left}
+              key="login-left"
+              custom={1}
+              variants={dismantleVariants}
+              initial="initial"
+              exit="exit"
+            >
+              {/* Grain texture */}
+              <div className={styles.grain} aria-hidden />
 
-      {/* ══════════════════════════════════════
-          LEFT — Brand panel
-      ══════════════════════════════════════ */}
-      <div className={styles.left}>
-        {/* Grain texture */}
-        <div className={styles.grain} aria-hidden />
+              {/* Background mesh glows */}
+              <motion.div custom={2} variants={dismantleVariants} initial="initial" exit="exit" className={styles.glow1} aria-hidden />
+              <motion.div custom={3} variants={dismantleVariants} initial="initial" exit="exit" className={styles.glow2} aria-hidden />
+              <motion.div custom={4} variants={dismantleVariants} initial="initial" exit="exit" className={styles.glow3} aria-hidden />
 
-        {/* Background mesh glows */}
-        <div className={styles.glow1} aria-hidden />
-        <div className={styles.glow2} aria-hidden />
-        <div className={styles.glow3} aria-hidden />
+              {/* Top badge */}
+              <motion.div custom={5} variants={dismantleVariants} initial="initial" exit="exit" className={styles.liveBadge}>
+                <span className={styles.liveDot} />
+                Sistema Ativo
+              </motion.div>
 
-        {/* Top badge */}
-        <div className={styles.liveBadge}>
-          <span className={styles.liveDot} />
-          Sistema Ativo
-        </div>
+              {/* HERO TEXT */}
+              <motion.div custom={6} variants={dismantleVariants} initial="initial" exit="exit" className={styles.hero} ref={heroRef}>
+                <div className={styles.heroRow}>
+                  <span className={styles.heroOutline}>INVEST</span>
+                </div>
+                <div className={styles.heroRow}>
+                  <span className={styles.heroFilled}>DREAM</span>
+                </div>
+                <div className={styles.heroTag}>
+                  CRM — Gestão Exclusiva de Aluguéis Anuais
+                </div>
+              </motion.div>
 
-        {/* HERO TEXT */}
-        <div className={styles.hero} ref={heroRef}>
-          <div className={styles.heroRow}>
-            <span className={styles.heroOutline}>INVEST</span>
-          </div>
-          <div className={styles.heroRow}>
-            <span className={styles.heroFilled}>DREAM</span>
-          </div>
-          <div className={styles.heroTag}>
-            CRM — Gestão Exclusiva de Aluguéis Anuais
-          </div>
-        </div>
-
-        {/* ── Animated SVG chart ── */}
-        <div className={styles.chartOuter}>
-          <div className={styles.chartYAxis}>
+              {/* ── Animated SVG chart ── */}
+              <motion.div custom={7} variants={dismantleVariants} initial="initial" exit="exit" className={styles.chartOuter}>
+                <div className={styles.chartYAxis}>
             {['+24%', '+16%', '+8%', '0%'].map((l) => (
               <span key={l}>{l}</span>
             ))}
@@ -206,7 +240,7 @@ export default function LoginPage() {
               ))}
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* ── Floating stat cards ── */}
         {/* {STATS.map((s, i) => (
@@ -224,44 +258,52 @@ export default function LoginPage() {
           </div>
         ))} */}
 
-        {/* Bottom strip */}
-        <footer className={styles.leftFooter}>
-          <span className={styles.footerDot} />
-          © 2025 Invest Dream — Plataforma exclusiva
-        </footer>
-      </div>
 
-      {/* ══════════════════════════════════════
-          RIGHT — Form panel
-      ══════════════════════════════════════ */}
-      <div className={styles.right}>
-        {/* Subtle corner decoration */}
-        <div className={styles.cornerDeco} aria-hidden />
+          {/* Bottom strip */}
+          <motion.footer custom={8} variants={dismantleVariants} initial="initial" exit="exit" className={styles.leftFooter}>
+            <span className={styles.footerDot} />
+            © 2025 Invest Dream — Plataforma exclusiva
+          </motion.footer>
+        </motion.div>
 
-        {/* Logo */}
-        <div className={styles.rightHeader}>
-          <div className={styles.logoChip}>
-            <Image src="/image.png" alt="Invest Dream" width={26} height={26} />
-          </div>
-          <span className={styles.logoChipLabel}>Invest Dream</span>
-        </div>
+        {/* ══════════════════════════════════════
+            RIGHT — Form panel
+        ══════════════════════════════════════ */}
+        <motion.div 
+          className={styles.right}
+          key="login-right"
+          custom={9}
+          variants={dismantleVariants}
+          initial="initial"
+          exit="exit"
+        >
+          {/* Subtle corner decoration */}
+          <div className={styles.cornerDeco} aria-hidden />
 
-        {/* Form container */}
-        <div className={styles.formWrap}>
-          <div className={styles.formHead}>
-            <p className={styles.formEyebrow}>Portal de Gestão</p>
-            <h1 className={styles.formTitle}>
-              Acesse<br />sua conta
-            </h1>
-            <p className={styles.formDesc}>
-              Plataforma de gestão exclusiva para parceiros certificados.
-            </p>
-          </div>
+          {/* Logo */}
+          <motion.div custom={10} variants={dismantleVariants} initial="initial" exit="exit" className={styles.rightHeader}>
+            <div className={styles.logoChip}>
+              <Image src="/image.png" alt="Invest Dream" width={26} height={26} />
+            </div>
+            <span className={styles.logoChipLabel}>Invest Dream</span>
+          </motion.div>
 
-          {/* Divider */}
-          <div className={styles.divider} />
+          {/* Form container */}
+          <motion.div custom={11} variants={dismantleVariants} initial="initial" exit="exit" className={styles.formWrap}>
+            <div className={styles.formHead}>
+              <p className={styles.formEyebrow}>Portal de Gestão</p>
+              <h1 className={styles.formTitle}>
+                Acesse<br />sua conta
+              </h1>
+              <p className={styles.formDesc}>
+                Plataforma de gestão exclusiva para parceiros certificados.
+              </p>
+            </div>
 
-          {error && (
+            {/* Divider */}
+            <div className={styles.divider} />
+
+            {error && (
             <div className={styles.errorBox} role="alert">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <circle cx="7" cy="7" r="6.5" stroke="#be123c" />
@@ -351,20 +393,22 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Trust row */}
-          <div className={styles.trust}>
-            <div className={styles.trustItem}>
-              <span className={styles.trustDot} style={{ background: '#10b981' }} />
-              Conexão SSL segura
-            </div>
-            <span className={styles.trustSep} />
-            <div className={styles.trustItem}>
-              <span className={styles.trustDot} style={{ background: '#6366f1' }} />
-              Acesso restrito
-            </div>
-          </div>
-        </div>
-      </div>
+            <motion.div custom={12} variants={dismantleVariants} initial="initial" exit="exit" className={styles.trust}>
+              <div className={styles.trustItem}>
+                <span className={styles.trustDot} style={{ background: '#10b981' }} />
+                Conexão SSL segura
+              </div>
+              <span className={styles.trustSep} />
+              <div className={styles.trustItem}>
+                <span className={styles.trustDot} style={{ background: '#6366f1' }} />
+                Acesso restrito
+              </div>
+            </motion.div>
+          </motion.div>
+        </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

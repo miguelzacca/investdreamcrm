@@ -15,6 +15,7 @@ import {
   BarChart3,
   ChevronRight,
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { MobileAdminDashboard } from '@/components/mobile/MobileAdminDashboard';
 import { MobileUserDashboard } from '@/components/mobile/MobileUserDashboard';
 import { AiChat } from '@/components/ai/AiChat';
@@ -53,6 +54,40 @@ export function AppLayout({ children, title }: AppLayoutProps) {
       ]
     : [];
 
+  // Framer Motion variants
+  const layoutVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20, filter: 'blur(4px)' },
+    show: {
+      opacity: 1,
+      y: 0,
+      filter: 'blur(0px)',
+      transition: {
+        duration: 0.7,
+        ease: [0.16, 1, 0.3, 1] as const, // easeOutQuint
+      },
+    },
+  };
+
+  const sidebarVariants = {
+    hidden: { opacity: 0, x: -50 },
+    show: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] as const }
+    }
+  };
+
   return (
     <>
       {/* Mobile view for ADMIN */}
@@ -70,9 +105,14 @@ export function AppLayout({ children, title }: AppLayoutProps) {
       )}
 
       {/* Desktop view */}
-      <div className={`${styles.layout} desktop-only`}>
+      <motion.div 
+        className={`${styles.layout} desktop-only`}
+        variants={layoutVariants}
+        initial="hidden"
+        animate="show"
+      >
         {/* ── Sidebar ── */}
-        <aside className={styles.sidebar}>
+        <motion.aside variants={sidebarVariants} className={styles.sidebar}>
 
           {/* Logo */}
           <div className={styles.logo}>
@@ -149,12 +189,12 @@ export function AppLayout({ children, title }: AppLayoutProps) {
               Sair da conta
             </button>
           </div>
-        </aside>
+        </motion.aside>
 
         {/* ── Main content ── */}
         <main className={styles.main}>
           {/* Top header bar */}
-          <header className={styles.header}>
+          <motion.header variants={itemVariants} className={styles.header}>
             <div className={styles.headerLeft}>
               {/* Breadcrumb path */}
               <div className={styles.headerBreadcrumb}>
@@ -177,15 +217,15 @@ export function AppLayout({ children, title }: AppLayoutProps) {
                 <span className={styles.headerUserName}>{displayName}</span>
               </div>
             </div>
-          </header>
+          </motion.header>
 
-          <div className={styles.content}>
+          <motion.div variants={itemVariants} className={styles.content}>
             {children}
-          </div>
+          </motion.div>
         </main>
 
         <AiChat />
-      </div>
+      </motion.div>
     </>
   );
 }
