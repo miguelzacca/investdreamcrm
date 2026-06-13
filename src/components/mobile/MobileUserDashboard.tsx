@@ -128,7 +128,7 @@ export function MobileUserDashboard() {
                     <Copy size={18} />
                   </button>
                   <a 
-                    href={`https://wa.me/${lead.whatsApp.replace(/\D/g, '')}?text=${encodeURIComponent(`Olá ${lead.name}, sou ${firstName} corretor(a) da Invest Dream. Vi que você tem interesse em ${lead.interest || 'nossos imóveis'}. Como posso ajudar?`)}`}
+                    href={`https://wa.me/${lead.whatsApp.replace(/\D/g, '')}?text=${encodeURIComponent(`Olá ${lead.name}, sou ${firstName} corretor(a) da Invest Dream. Como posso ajudar?`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={styles.whatsappBtn}
