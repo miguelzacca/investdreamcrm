@@ -533,17 +533,18 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
                       <span>🕐 Follow-up ({ghostLeads.length})</span>
                     </div>
                     {ghostLeads.map(lead => (
-                      <LeadCard
-                        key={lead.id}
-                        lead={lead}
-                        isDragging={false}
-                        isGhost
-                        stageColor={stage.color}
-                        onDragStart={handleDragStart}
-                        onDragEnd={handleDragEnd}
-                        onInterestSave={handleInterestSave}
-                        onTemperatureCycle={handleTemperatureCycle}
-                      />
+                      <div key={lead.id} className={styles.cardWrapper}>
+                        <LeadCard
+                          lead={lead}
+                          isDragging={false}
+                          isGhost
+                          stageColor={stage.color}
+                          onDragStart={handleDragStart}
+                          onDragEnd={handleDragEnd}
+                          onInterestSave={handleInterestSave}
+                          onTemperatureCycle={handleTemperatureCycle}
+                        />
+                      </div>
                     ))}
                   </>
                 )}
