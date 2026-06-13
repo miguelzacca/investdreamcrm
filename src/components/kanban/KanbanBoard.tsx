@@ -60,6 +60,7 @@ function LeadCard({
   onDragStart, onDragEnd, onInterestSave, onTemperatureCycle
 }: LeadCardProps) {
   const [isEditingInterest, setIsEditingInterest] = useState(false);
+  const [isExpandedText, setIsExpandedText] = useState(false);
   const [interestDraft, setInterestDraft] = useState('');
   const [isSavingInterest, setIsSavingInterest] = useState(false);
   const [isCycling, setIsCycling] = useState(false);
@@ -223,7 +224,16 @@ function LeadCard({
           ) : (
             <>
               {lead.interest ? (
-                <span className={styles.leadInterestText}>🏠 {lead.interest}</span>
+                <span 
+                  className={`${styles.leadInterestText} ${isExpandedText ? styles.expandedText : ''}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsExpandedText(!isExpandedText);
+                  }}
+                  title={!isExpandedText ? lead.interest : undefined}
+                >
+                  🏠 {lead.interest}
+                </span>
               ) : (
                 <span className={styles.leadInterestEmpty}>Sem interesse registrado</span>
               )}
