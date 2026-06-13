@@ -74,7 +74,7 @@ export function AppLayout({ children, title }: AppLayoutProps) {
       scale: 1,
       filter: 'blur(0px)',
       transition: {
-        type: 'spring',
+        type: 'spring' as const,
         stiffness: 110,
         damping: 14,
         mass: 1.2
@@ -89,7 +89,7 @@ export function AppLayout({ children, title }: AppLayoutProps) {
       x: 0,
       rotateY: 0,
       transition: { 
-        type: 'spring', 
+        type: 'spring' as const, 
         stiffness: 90, 
         damping: 16, 
         delay: 0.2 
