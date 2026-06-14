@@ -298,11 +298,36 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
   const boardRef = useRef<HTMLDivElement>(null);
   const [isScrolling, setIsScrolling] = useState(false);
   const [startX, setStartX] = useState(0);
+  const [startY, setStartY] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
+  const [scrollTop, setScrollTop] = useState(0);
+
+  const autoScrollState = useRef({ speedX: 0, speedY: 0, colSpeedY: 0, activeColumn: null as HTMLElement | null });
+  const autoScrollRAF = useRef<number | null>(null);
+  const scrollParentRef = useRef<HTMLElement | null>(null);
+
+  const getScrollParent = (node: HTMLElement | null): HTMLElement | null => {
+    if (!node) return null;
+    if (node.scrollHeight > node.clientHeight) {
+      const overflowY = window.getComputedStyle(node).overflowY;
+      if (overflowY === 'auto' || overflowY === 'scroll') {
+        return node;
+      }
+    }
+    return getScrollParent(node.parentElement);
+  };
 
   useEffect(() => {
     setLeads(initialLeads);
   }, [initialLeads]);
+
+  useEffect(() => {
+    return () => {
+      if (autoScrollRAF.current !== null) {
+        cancelAnimationFrame(autoScrollRAF.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     try {
@@ -337,9 +362,108 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
     setDragOverStage(stage);
   };
 
+  const startAutoScroll = () => {
+    if (autoScrollRAF.current) return;
+    scrollParentRef.current = getScrollParent(boardRef.current) || document.documentElement;
+    let lastTime = performance.now();
+    
+    const scrollStep = (time: number) => {
+      const { speedX, speedY, colSpeedY, activeColumn } = autoScrollState.current;
+      
+      if (!boardRef.current || (speedX === 0 && speedY === 0 && colSpeedY === 0)) {
+         stopAutoScroll();
+         return;
+      }
+      
+      const deltaTime = time - lastTime;
+      lastTime = time;
+      const factor = deltaTime / 16.66;
+      
+      if (speedX !== 0) {
+        boardRef.current.scrollLeft += speedX * factor;
+      }
+      if (speedY !== 0 && scrollParentRef.current) {
+        scrollParentRef.current.scrollTop += speedY * factor;
+      }
+      if (colSpeedY !== 0 && activeColumn) {
+        activeColumn.scrollTop += colSpeedY * factor;
+      }
+      
+      autoScrollRAF.current = requestAnimationFrame(scrollStep);
+    };
+    
+    autoScrollRAF.current = requestAnimationFrame(scrollStep);
+  };
+
+  const stopAutoScroll = () => {
+    if (autoScrollRAF.current !== null) {
+      cancelAnimationFrame(autoScrollRAF.current);
+      autoScrollRAF.current = null;
+    }
+    autoScrollState.current.speedX = 0;
+    autoScrollState.current.speedY = 0;
+    autoScrollState.current.colSpeedY = 0;
+    autoScrollState.current.activeColumn = null;
+  };
+
+  const handleBoardDragOver = (e: React.DragEvent) => {
+    e.preventDefault(); 
+    if (!boardRef.current || !draggedLeadId) return;
+
+    const { clientX, clientY } = e;
+    const { left, right } = boardRef.current.getBoundingClientRect();
+    const parent = getScrollParent(boardRef.current) || document.documentElement;
+    const parentRect = parent.getBoundingClientRect();
+    
+    const scrollThreshold = 150;
+    const maxSpeed = 20;
+
+    let speedX = 0;
+    if (clientX - left < scrollThreshold) {
+      speedX = -maxSpeed * (1 - Math.max(0, clientX - left) / scrollThreshold);
+    } else if (right - clientX < scrollThreshold) {
+      speedX = maxSpeed * (1 - Math.max(0, right - clientX) / scrollThreshold);
+    }
+
+    let speedY = 0;
+    if (clientY - parentRect.top < scrollThreshold) {
+      speedY = -maxSpeed * (1 - Math.max(0, clientY - parentRect.top) / scrollThreshold);
+    } else if (parentRect.bottom - clientY < scrollThreshold) {
+      speedY = maxSpeed * (1 - Math.max(0, parentRect.bottom - clientY) / scrollThreshold);
+    }
+
+    let colSpeedY = 0;
+    let activeColumn: HTMLElement | null = null;
+    const targetEl = e.target as Element;
+    if (targetEl && targetEl.closest) {
+      const columnContent = targetEl.closest(`.${styles.columnContent}`);
+      if (columnContent) {
+        activeColumn = columnContent as HTMLElement;
+        const colRect = columnContent.getBoundingClientRect();
+        if (clientY - colRect.top < scrollThreshold) {
+          colSpeedY = -maxSpeed * (1 - Math.max(0, clientY - colRect.top) / scrollThreshold);
+        } else if (colRect.bottom - clientY < scrollThreshold) {
+          colSpeedY = maxSpeed * (1 - Math.max(0, colRect.bottom - clientY) / scrollThreshold);
+        }
+      }
+    }
+
+    autoScrollState.current.speedX = speedX;
+    autoScrollState.current.speedY = speedY;
+    autoScrollState.current.colSpeedY = colSpeedY;
+    autoScrollState.current.activeColumn = activeColumn;
+
+    if (speedX !== 0 || speedY !== 0 || colSpeedY !== 0) {
+      startAutoScroll();
+    } else {
+      stopAutoScroll();
+    }
+  };
+
   const handleDrop = async (e: React.DragEvent, stage: FunnelStage) => {
     e.preventDefault();
     setDragOverStage(null);
+    stopAutoScroll();
     if (draggedLeadId) {
       const lead = leads.find(l => l.id === draggedLeadId);
       if (lead && lead.funnelStage !== stage) {
@@ -360,6 +484,7 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
   const handleDragEnd = () => {
     setDraggedLeadId(null);
     setDragOverStage(null);
+    stopAutoScroll();
   };
 
   // Drag-to-scroll
@@ -370,6 +495,11 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
     setIsScrolling(true);
     setStartX(e.pageX - boardRef.current.offsetLeft);
     setScrollLeft(boardRef.current.scrollLeft);
+
+    const parent = getScrollParent(boardRef.current) || document.documentElement;
+    scrollParentRef.current = parent;
+    setStartY(e.pageY);
+    setScrollTop(parent.scrollTop);
   };
 
   const handleMouseLeave = () => setIsScrolling(false);
@@ -380,6 +510,11 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
     e.preventDefault();
     const x = e.pageX - boardRef.current.offsetLeft;
     boardRef.current.scrollLeft = scrollLeft - (x - startX) * 1.5;
+
+    if (scrollParentRef.current) {
+      const y = e.pageY;
+      scrollParentRef.current.scrollTop = scrollTop - (y - startY) * 1.5;
+    }
   };
 
   const handleInterestSave = async (leadId: string, interest: string) => {
@@ -403,6 +538,7 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
         onMouseLeave={handleMouseLeave}
         onMouseUp={handleMouseUp}
         onMouseMove={handleMouseMove}
+        onDragOver={handleBoardDragOver}
       >
         {STAGES.map(stage => {
           const now = new Date();
