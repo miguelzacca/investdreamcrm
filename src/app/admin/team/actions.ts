@@ -18,9 +18,7 @@ export async function getTeamStats() {
 
   const agents = await prisma.user.findMany({
     include: {
-      leads: {
-        where: { isArchived: false },
-      },
+      leads: true,
       deals: true,
     },
     orderBy: [
@@ -30,7 +28,8 @@ export async function getTeamStats() {
   });
 
   return agents.map((agent) => {
-    const hotLeads = agent.leads.filter((l) => l.temperature === "HOT").length;
+    const activeLeads = agent.leads.filter(l => !l.isArchived);
+    const hotLeads = activeLeads.filter((l) => l.temperature === "HOT").length;
     const closedWon = agent.leads.filter((l) => l.funnelStage === "CLOSED_WON").length;
     const totalCommission = agent.deals.reduce(
       (sum, d) => sum + (d.firstMonthCommission ?? 0),
@@ -57,7 +56,7 @@ export async function getTeamStats() {
       queueOrder: agent.queueOrder,
       inAutoQueue: agent.inAutoQueue,
       lastLeadReceivedAt: agent.lastLeadReceivedAt?.toISOString() ?? null,
-      activeLeads: agent.leads.length,
+      activeLeads: activeLeads.length,
       hotLeads,
       closedWon,
       totalDeals: agent.deals.length,
@@ -92,7 +91,7 @@ export async function getAgentDetail(agentId: string) {
   );
 
   // Calc Average Response Time (TMA)
-  const contactedLeads = activeLeads.filter(l => l.firstContactedAt);
+  const contactedLeads = agent.leads.filter(l => l.firstContactedAt);
   let avgResponseTimeMins = null;
   if (contactedLeads.length > 0) {
     const totalMins = contactedLeads.reduce((sum, l) => {

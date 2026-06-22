@@ -33,6 +33,7 @@ export interface DashboardMetrics {
     totalRentVolume: number;
     totalCommission: number;
     avgRentVolume: number;
+    avgResponseTimeMins: number | null;
   }[];
 
   monthlyTrends: {
@@ -40,6 +41,7 @@ export interface DashboardMetrics {
     deals: number;
     revenue: number;
   }[];
+  teamAvgResponseTimeMins: number | null;
 }
 
 export async function getAdminMetrics(periodDays: number = 30): Promise<DashboardMetrics> {
@@ -160,6 +162,16 @@ export async function getAdminMetrics(periodDays: number = 30): Promise<Dashboar
     const brokerCommission = brokerDeals.reduce((sum, deal) => sum + (deal.firstMonthCommission || 0) + (deal.recurringManagementFee || 0), 0);
     const avgRentVolume = closedDealsCount > 0 ? brokerRentVolume / closedDealsCount : 0;
 
+    const contactedLeads = brokerLeads.filter(l => l.firstContactedAt);
+    let avgResponseTimeMins = null;
+    if (contactedLeads.length > 0) {
+      const totalMins = contactedLeads.reduce((sum, l) => {
+        const diffMs = l.firstContactedAt!.getTime() - l.createdAt.getTime();
+        return sum + Math.max(0, diffMs / 60000);
+      }, 0);
+      avgResponseTimeMins = Math.round(totalMins / contactedLeads.length);
+    }
+
     return {
       id: broker.id,
       name: broker.name,
@@ -172,7 +184,8 @@ export async function getAdminMetrics(periodDays: number = 30): Promise<Dashboar
       conversionRateVisitToClosed,
       totalRentVolume: brokerRentVolume,
       totalCommission: brokerCommission,
-      avgRentVolume
+      avgRentVolume,
+      avgResponseTimeMins
     };
   }).sort((a, b) => b.totalCommission - a.totalCommission); // Sort by commission
 
@@ -212,6 +225,16 @@ export async function getAdminMetrics(periodDays: number = 30): Promise<Dashboar
     revenue: data.revenue
   }));
 
+  const contactedLeads = leadsInPeriod.filter(l => l.firstContactedAt);
+  let teamAvgResponseTimeMins = null;
+  if (contactedLeads.length > 0) {
+    const totalMins = contactedLeads.reduce((sum, l) => {
+      const diffMs = l.firstContactedAt!.getTime() - l.createdAt.getTime();
+      return sum + Math.max(0, diffMs / 60000);
+    }, 0);
+    teamAvgResponseTimeMins = Math.round(totalMins / contactedLeads.length);
+  }
+
   return {
     totalLeads,
     totalActiveLeads,
@@ -224,6 +247,7 @@ export async function getAdminMetrics(periodDays: number = 30): Promise<Dashboar
     temperatureMetrics,
     sourceMetrics,
     brokerPerformance,
-    monthlyTrends
+    monthlyTrends,
+    teamAvgResponseTimeMins
   };
 }

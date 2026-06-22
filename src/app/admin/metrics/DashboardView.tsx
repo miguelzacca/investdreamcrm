@@ -11,7 +11,7 @@ import {
 import {
   DollarSign, Users, Target, Activity, Filter, TrendingUp, TrendingDown,
   PieChart as PieChartIcon, Award, Flame, Thermometer, BarChart2,
-  UserX, UserCheck, ChevronUp, ChevronDown, Minus, Star, Trophy, Medal
+  UserX, UserCheck, ChevronUp, ChevronDown, Minus, Star, Trophy, Medal, Clock
 } from 'lucide-react';
 import { DashboardMetrics } from './actions';
 import styles from './page.module.css';
@@ -28,6 +28,14 @@ const formatCurrencyShort = (value: number) => {
   if (value >= 1_000_000) return `R$${(value / 1_000_000).toFixed(1)}M`;
   if (value >= 1_000) return `R$${(value / 1_000).toFixed(0)}K`;
   return formatCurrency(value);
+};
+
+const formatTMA = (mins: number | null) => {
+  if (mins === null) return "—";
+  if (mins < 60) return `${mins}m`;
+  const hours = Math.floor(mins / 60);
+  const remainingMins = mins % 60;
+  return `${hours}h ${remainingMins}m`;
 };
 
 // Animated counter hook
@@ -255,6 +263,23 @@ export default function DashboardView({ initialMetrics, currentPeriod }: Dashboa
             <span className={styles.textRed}>{metrics.totalArchivedLeads} perdidos</span>
             <span style={{ color: 'var(--text-tertiary)' }}>&nbsp;·&nbsp;</span>
             <span>{metrics.totalLeads} total</span>
+          </div>
+        </div>
+
+        {/* Tempo Médio de Atend. (TMA) */}
+        <div className={`${styles.kpiCard} ${styles.kpiCardPurple}`}>
+          <div className={styles.kpiGlow} />
+          <div className={styles.kpiHeader}>
+            <span className={styles.kpiTitle}>TMA (Equipe)</span>
+            <div className={`${styles.kpiIconWrap} ${styles.kpiIconPurple}`}>
+              <Clock size={18} />
+            </div>
+          </div>
+          <div className={styles.kpiValue}>
+            {formatTMA(metrics.teamAvgResponseTimeMins)}
+          </div>
+          <div className={styles.kpiFooter}>
+            <span>Tempo Médio de Atendimento</span>
           </div>
         </div>
       </motion.div>
@@ -486,6 +511,7 @@ export default function DashboardView({ initialMetrics, currentPeriod }: Dashboa
                       <th>Status</th>
                       <th>Eficiência (Visita→Fechado)</th>
                       <th>Ticket Médio</th>
+                      <th>TMA</th>
                       <th>Comissão Gerada</th>
                     </tr>
                   </thead>
@@ -542,6 +568,11 @@ export default function DashboardView({ initialMetrics, currentPeriod }: Dashboa
                           </td>
                           <td style={{ fontWeight: 600 }}>{formatCurrency(broker.avgRentVolume)}</td>
                           <td>
+                            <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                              {formatTMA(broker.avgResponseTimeMins)}
+                            </span>
+                          </td>
+                          <td>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                               <span style={{ color: '#10b981', fontWeight: 800, fontSize: '1rem' }}>
                                 {formatCurrency(broker.totalCommission)}
@@ -595,6 +626,34 @@ export default function DashboardView({ initialMetrics, currentPeriod }: Dashboa
                           <Cell key={i} fill={i === 0 ? '#f59e0b' : i === 1 ? '#94a3b8' : i === 2 ? '#cd7c3f' : '#8b5cf6'} />
                         ))}
                       </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Broker TMA comparison bar chart */}
+            {metrics.brokerPerformance.length > 0 && (
+              <motion.div className={styles.chartCard} variants={itemVariants}>
+                <h3 className={styles.chartTitle}>
+                  <span className={styles.chartTitleIcon} style={{ background: 'rgba(239,68,68,0.1)' }}>
+                    <Clock size={15} className={styles.textRed} />
+                  </span>
+                  Tempo Médio de Atendimento (TMA) por Corretor
+                </h3>
+                <div style={{ minHeight: 260 }}>
+                  <ResponsiveContainer width="100%" height={260}>
+                    <BarChart data={[...metrics.brokerPerformance].filter(b => b.avgResponseTimeMins !== null).sort((a, b) => (a.avgResponseTimeMins as number) - (b.avgResponseTimeMins as number))} layout="vertical" barSize={18}>
+                      <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--border)" />
+                      <XAxis type="number" stroke="var(--text-secondary)" fontSize={11} tickLine={false} axisLine={false}
+                        tickFormatter={v => `${v}m`} />
+                      <YAxis type="category" dataKey="name" stroke="var(--text-secondary)" fontSize={12} tickLine={false} axisLine={false} width={100} />
+                      <RechartsTooltip
+                        formatter={(v: any) => [formatTMA(Number(v)), 'TMA']}
+                        contentStyle={tooltipStyle}
+                        cursor={{ fill: 'rgba(0,0,0,0.04)' }}
+                      />
+                      <Bar dataKey="avgResponseTimeMins" name="TMA" radius={[0, 6, 6, 0]} fill="#3b82f6" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
