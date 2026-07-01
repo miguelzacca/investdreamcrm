@@ -30,7 +30,8 @@ export async function createInstance(instanceName: string = ADMIN_INSTANCE_NAME)
       body: JSON.stringify({
         instanceName,
         token: instanceName,
-        qrcode: true
+        qrcode: true,
+        integration: "WHATSAPP-BAILEYS"
       })
     });
     return await res.json();

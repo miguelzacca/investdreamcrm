@@ -14,6 +14,7 @@ import {
   Send,
   BarChart3,
   ChevronRight,
+  MessageCircle,
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { MobileAdminDashboard } from "@/components/mobile/MobileAdminDashboard";
@@ -69,6 +70,7 @@ export function AppLayout({ children, title }: AppLayoutProps) {
         { name: "Distribuir Leads", href: "/admin/leads",      icon: Send },
         { name: "Equipe",           href: "/admin/team",       icon: Users },
         { name: "Novo Usuário",     href: "/admin/users/new",  icon: UserPlus },
+        { name: "WhatsApp Bot",     href: "/admin/whatsapp",   icon: MessageCircle },
       ]
     : [];
 
