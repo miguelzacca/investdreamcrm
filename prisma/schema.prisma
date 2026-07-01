@@ -40,6 +40,7 @@ model User {
   queueOrder           Int       @default(0)
   lastLeadReceivedAt   DateTime?
   inAutoQueue          Boolean   @default(true)
+  whatsApp             String?
   leads                Lead[]
   deals                Deal[]
   pushSubscriptions    PushSubscription[]
