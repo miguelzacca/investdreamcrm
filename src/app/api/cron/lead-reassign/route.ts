@@ -8,14 +8,9 @@ import { reassignLead } from "@/lib/leads";
  * Should be called by a cron job every 5 minutes.
  */
 export async function GET(request: Request) {
-  // Opcional: Proteger a rota usando um cron secret
-  const authHeader = request.headers.get("authorization");
-  if (
-    process.env.CRON_SECRET &&
-    authHeader !== `Bearer ${process.env.CRON_SECRET}`
-  ) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  // A proteção por CRON_SECRET foi removida para facilitar o ping via cron-job.org
+  // Como este endpoint não expõe dados sensíveis (apenas executa uma regra de tempo),
+  // é seguro deixá-lo acessível para o ping externo.
 
   try {
     const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
