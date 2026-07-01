@@ -7,6 +7,8 @@ import { authOptions } from "@/lib/auth";
 import { Temperature } from "@prisma/client";
 import { sendNewLeadEmail } from "@/lib/mailer";
 import { LeadInput, createLeadRoundRobin, pickNextQueueAgent } from "@/lib/leads";
+import { getInstanceStatus, sendText, ADMIN_INSTANCE_NAME } from "@/lib/evolution";
+import { generateLeadNotificationMessage } from "@/lib/ai-message";
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions);
@@ -66,6 +68,7 @@ export async function adminCreateLeadForAgent(
     select: {
       email: true,
       name: true,
+      whatsApp: true,
       pushSubscriptions: true,
     },
   });
@@ -96,6 +99,28 @@ export async function adminCreateLeadForAgent(
         { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
         payload
       ).catch((err) => console.error("[adminCreateLeadForAgent] push send error:", err));
+    }
+  }
+
+  // Notifica por WhatsApp
+  if (agent?.whatsApp) {
+    try {
+      const status = await getInstanceStatus(ADMIN_INSTANCE_NAME);
+      const instanceState = status?.instance?.state ?? status?.state;
+      if (instanceState === 'open') {
+        const leadUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/leads/${lead.id}`;
+        const aiMessage = await generateLeadNotificationMessage(
+          lead.name,
+          lead.interest,
+          agent.name,
+          leadUrl,
+        );
+        await sendText(ADMIN_INSTANCE_NAME, agent.whatsApp, aiMessage);
+      } else {
+        console.warn('[adminCreateLeadForAgent] WA instance not open, state:', instanceState);
+      }
+    } catch (err) {
+      console.error('[adminCreateLeadForAgent] whatsapp notification error:', err);
     }
   }
 

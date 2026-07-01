@@ -21,9 +21,15 @@ export async function GET(req: NextRequest) {
     if (action === 'connect') {
       let status = await getInstanceStatus();
       if (!status || status.error) {
-        await createInstance();
+        const created = await createInstance();
+        if (created?.status === 401) {
+          return NextResponse.json({ error: 'Evolution API Key Inválida ou Ausente.' }, { status: 401 });
+        }
       }
       const connect = await connectInstance();
+      if (connect?.status === 401) {
+         return NextResponse.json({ error: 'Evolution API Key Inválida ou Ausente.' }, { status: 401 });
+      }
       return NextResponse.json(connect);
     }
 

@@ -17,6 +17,7 @@ type Agent = {
   name: string;
   username: string;
   email: string | null;
+  whatsApp: string | null;
   role: string;
   queueOrder: number;
   inAutoQueue: boolean;
@@ -114,6 +115,102 @@ function EmailEditCell({ agent }: { agent: Agent }) {
             setError("");
           }}
           placeholder="email@corretor.com"
+          disabled={isPending}
+          autoFocus
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSave();
+            if (e.key === "Escape") handleCancel();
+          }}
+        />
+        {error && (
+          <div className={editStyles.errorHint}>
+            <AlertCircle size={11} /> {error}
+          </div>
+        )}
+      </div>
+      <button className={editStyles.saveBtn} onClick={handleSave} disabled={isPending} title="Salvar">
+        <Check size={14} />
+      </button>
+      <button className={editStyles.cancelBtn} onClick={handleCancel} disabled={isPending} title="Cancelar">
+        <X size={14} />
+      </button>
+    </div>
+  );
+}
+
+/* ─── WhatsApp edit cell ────────────────────────────────────────────── */
+function WhatsAppEditCell({ agent }: { agent: Agent }) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(agent.whatsApp ?? "");
+  const [saved, setSaved] = useState(agent.whatsApp ?? "");
+  const [error, setError] = useState("");
+  const [isPending, startTransition] = useTransition();
+
+  const handleSave = () => {
+    setError("");
+    startTransition(async () => {
+      try {
+        const res = await fetch(`/api/admin/users/${agent.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ whatsApp: value || null }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setError(data.error ?? "Erro ao salvar.");
+          return;
+        }
+        setSaved(data.whatsApp ?? "");
+        setEditing(false);
+      } catch {
+        setError("Erro de conexão.");
+      }
+    });
+  };
+
+  const handleCancel = () => {
+    setValue(saved);
+    setError("");
+    setEditing(false);
+  };
+
+  if (!editing) {
+    return (
+      <div className={editStyles.emailCell}>
+        {saved ? (
+          <span className={editStyles.emailValue}>
+            📱 {saved}
+          </span>
+        ) : (
+          <span className={editStyles.noEmail}>Sem WA</span>
+        )}
+        <button
+          className={editStyles.editBtn}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setEditing(true);
+          }}
+          title="Editar WhatsApp"
+        >
+          <Pencil size={13} />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className={editStyles.editRow} onClick={(e) => e.preventDefault()}>
+      <div className={editStyles.inputWrapper}>
+        <input
+          className={editStyles.emailInput}
+          type="text"
+          value={value}
+          onChange={(e) => {
+            setValue(e.target.value);
+            setError("");
+          }}
+          placeholder="Ex: 5511999999999"
           disabled={isPending}
           autoFocus
           onKeyDown={(e) => {
@@ -359,6 +456,7 @@ export function TeamPageClient({ team }: { team: Agent[] }) {
             <span>Nome</span>
             <span>Usuário</span>
             <span>Email de Notificação</span>
+            <span>WhatsApp Bot</span>
             <span>Perfil</span>
             <span>Posição Fila</span>
             <span>Na Fila</span>
@@ -376,6 +474,7 @@ export function TeamPageClient({ team }: { team: Agent[] }) {
               </Link>
               <span className={styles.agentUsername}>@{agent.username}</span>
               <EmailEditCell agent={agent} />
+              <WhatsAppEditCell agent={agent} />
               <span>
                 <span className={agent.role === "ADMIN" ? styles.badgeAdmin : styles.badgeAgent}>
                   {agent.role === "ADMIN" ? "Admin" : "Corretor"}

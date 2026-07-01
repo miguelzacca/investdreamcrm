@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { name, username, password, role, email } = body;
+    const { name, username, password, role, email, whatsApp } = body;
 
     if (!name || !username || !password) {
       return NextResponse.json({ error: "Campos obrigatórios ausentes (nome, usuário, senha)." }, { status: 400 });
@@ -57,6 +57,7 @@ export async function POST(req: NextRequest) {
         username,
         passwordHash,
         email: email ?? null,
+        whatsApp: whatsApp ?? null,
         role: role === "ADMIN" ? "ADMIN" : "AGENT",
       },
     });

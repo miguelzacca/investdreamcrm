@@ -52,6 +52,7 @@ export async function getTeamStats() {
       name: agent.name,
       username: agent.username,
       email: agent.email,
+      whatsApp: agent.whatsApp,
       role: agent.role,
       queueOrder: agent.queueOrder,
       inAutoQueue: agent.inAutoQueue,

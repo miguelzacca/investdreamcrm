@@ -136,7 +136,9 @@ export async function createLeadRoundRobin(data: LeadInput) {
   if (target.whatsApp) {
     try {
       const status = await getInstanceStatus(ADMIN_INSTANCE_NAME)
-      if (status?.instance?.state === 'open') {
+      // Evolution API v2 returns { instance: { state: 'open' } } at /connectionState
+      const instanceState = status?.instance?.state ?? status?.state
+      if (instanceState === 'open') {
         const leadUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/leads/${lead.id}`
         const aiMessage = await generateLeadNotificationMessage(
           lead.name,
@@ -145,6 +147,8 @@ export async function createLeadRoundRobin(data: LeadInput) {
           leadUrl,
         )
         await sendText(ADMIN_INSTANCE_NAME, target.whatsApp, aiMessage)
+      } else {
+        console.warn('[createLeadRoundRobin] WA instance not open, state:', instanceState)
       }
     } catch (err) {
       console.error('[createLeadRoundRobin] whatsapp notification error:', err)
@@ -226,7 +230,8 @@ export async function reassignLead(leadId: string) {
   if (target.whatsApp) {
     try {
       const status = await getInstanceStatus(ADMIN_INSTANCE_NAME)
-      if (status?.instance?.state === 'open') {
+      const instanceState = status?.instance?.state ?? status?.state
+      if (instanceState === 'open') {
         const leadUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/leads/${updatedLead.id}`
         const aiMessage = await generateLeadNotificationMessage(
           updatedLead.name,
@@ -239,6 +244,8 @@ export async function reassignLead(leadId: string) {
           target.whatsApp,
           `*[REDISTRIBUIÇÃO]*\n\n${aiMessage}`,
         )
+      } else {
+        console.warn('[reassignLead] WA instance not open, state:', instanceState)
       }
     } catch (err) {
       console.error('[reassignLead] whatsapp notification error:', err)

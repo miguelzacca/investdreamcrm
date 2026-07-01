@@ -16,7 +16,7 @@ export async function PATCH(
 
   try {
     const body = await req.json();
-    const { email } = body;
+    const { email, whatsApp } = body;
 
     // Validate email format if provided
     if (email) {
@@ -32,8 +32,8 @@ export async function PATCH(
 
     const user = await prisma.user.update({
       where: { id },
-      data: { email: email || null },
-      select: { id: true, name: true, username: true, email: true },
+      data: { email: email || null, whatsApp: whatsApp || null },
+      select: { id: true, name: true, username: true, email: true, whatsApp: true },
     });
 
     return NextResponse.json(user);

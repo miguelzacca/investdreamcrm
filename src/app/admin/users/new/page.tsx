@@ -24,6 +24,7 @@ export default function NewUserPage() {
     password: '',
     confirmPassword: '',
     role: 'AGENT',
+    whatsApp: '',
   });
 
   const handleChange = (field: string, value: string) => {
@@ -57,6 +58,7 @@ export default function NewUserPage() {
             email: form.email || undefined,
             password: form.password,
             role: form.role,
+            whatsApp: form.whatsApp || null,
           }),
         });
 
@@ -68,7 +70,7 @@ export default function NewUserPage() {
         }
 
         setSuccess(`Agente "${data.name}" criado com sucesso!`);
-        setForm({ name: '', username: '', email: '', password: '', confirmPassword: '', role: 'AGENT' });
+        setForm({ name: '', username: '', email: '', password: '', confirmPassword: '', role: 'AGENT', whatsApp: '' });
         setTimeout(() => router.push('/admin/team'), 1500);
       } catch {
         setError('Erro de conexão. Tente novamente.');
@@ -119,6 +121,14 @@ export default function NewUserPage() {
                   placeholder="Ex: ana.souza@imobiliaria.com"
                   value={form.email}
                   onChange={(e) => handleChange('email', e.target.value)}
+                  disabled={isPending}
+                />
+
+                <Input
+                  label="WhatsApp (com DDI e DDD)"
+                  placeholder="Ex: 5511999999999"
+                  value={form.whatsApp}
+                  onChange={(e) => handleChange('whatsApp', e.target.value)}
                   disabled={isPending}
                 />
 
