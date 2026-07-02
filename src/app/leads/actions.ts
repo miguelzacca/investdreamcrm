@@ -266,3 +266,37 @@ export async function createDeal(data: {
   revalidatePath(`/leads/${data.leadId}`);
   revalidatePath("/dashboard");
 }
+
+export async function reassignLeadToAgent(leadId: string, newAgentId: string) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id || session.user.role !== "ADMIN") {
+    throw new Error("Acesso negado. Apenas administradores podem reatribuir leads.");
+  }
+
+  const lead = await prisma.lead.update({
+    where: { id: leadId },
+    data: { 
+      agentId: newAgentId,
+      funnelStage: "NEW_LEAD",
+      isFollowUp: false,
+      followUpDate: null,
+    },
+    include: { agent: { select: { email: true, name: true } } },
+  });
+
+  if (lead.agent.email) {
+    sendNewLeadEmail({
+      agentEmail: lead.agent.email,
+      agentName: lead.agent.name,
+      leadName: lead.name,
+      leadWhatsApp: lead.whatsApp,
+      leadInterest: lead.interest,
+      leadSource: lead.source,
+      isFollowUp: false,
+    }).catch((err) => console.error("[reassignLeadToAgent] email error:", err));
+  }
+
+  revalidatePath("/leads");
+  revalidatePath(`/leads/${leadId}`);
+  revalidatePath("/dashboard");
+}

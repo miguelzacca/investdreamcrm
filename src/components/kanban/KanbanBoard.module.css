@@ -370,7 +370,7 @@
 }
 
 /* Follow-up variant — indigo */
-.cardActionBtn[data-variant="followup"] {
+.cardActionBtn[data-variant='followup'] {
   background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
   color: #fff;
   border-color: rgba(255, 255, 255, 0.25);
@@ -380,7 +380,7 @@
     0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
-.cardActionBtn[data-variant="followup"]:hover {
+.cardActionBtn[data-variant='followup']:hover {
   background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
   box-shadow:
     0 0 0 3px rgba(99, 102, 241, 0.22),
@@ -389,7 +389,7 @@
 }
 
 /* AI variant — purple-to-fuchsia gradient */
-.cardActionBtn[data-variant="ai"] {
+.cardActionBtn[data-variant='ai'] {
   background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
   color: #fff;
   border-color: rgba(255, 255, 255, 0.25);
@@ -400,7 +400,7 @@
   transition-delay: 25ms; /* slight stagger entrance */
 }
 
-.cardActionBtn[data-variant="ai"]:hover {
+.cardActionBtn[data-variant='ai']:hover {
   background: linear-gradient(135deg, #c084fc 0%, #f472b6 100%);
   box-shadow:
     0 0 0 3px rgba(168, 85, 247, 0.22),
@@ -408,6 +408,25 @@
     0 2px 6px rgba(0, 0, 0, 0.18);
 }
 
+/* Reassign variant — teal/emerald */
+.cardActionBtn[data-variant='reassign'] {
+  background: linear-gradient(135deg, #0d9488 0%, #059669 100%);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow:
+    0 0 0 2px rgba(13, 148, 136, 0.18),
+    0 2px 8px rgba(13, 148, 136, 0.35),
+    0 1px 3px rgba(0, 0, 0, 0.15);
+  transition-delay: 50ms; /* slight stagger entrance */
+}
+
+.cardActionBtn[data-variant='reassign']:hover {
+  background: linear-gradient(135deg, #14b8a6 0%, #10b981 100%);
+  box-shadow:
+    0 0 0 3px rgba(13, 148, 136, 0.22),
+    0 4px 14px rgba(13, 148, 136, 0.5),
+    0 2px 6px rgba(0, 0, 0, 0.18);
+}
 
 /* ── Lead Info ── */
 .leadInfo {
@@ -513,7 +532,7 @@
   color: var(--text-secondary);
   font-weight: 500;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -524,7 +543,7 @@
 }
 
 .leadInterestText.expandedText {
-  -webkit-line-clamp: unset;
+  line-clamp: unset;
   display: block;
 }
 
@@ -703,7 +722,9 @@
   font-weight: 800;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 120ms, transform 120ms;
+  transition:
+    background 120ms,
+    transform 120ms;
   line-height: 1;
 }
 
@@ -731,7 +752,10 @@
   font-size: 0.65rem;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 120ms, color 120ms, transform 120ms;
+  transition:
+    background 120ms,
+    color 120ms,
+    transform 120ms;
   line-height: 1;
 }
 
@@ -741,7 +765,6 @@
   border-color: #fca5a5;
   transform: scale(1.1);
 }
-
 
 /* ────────────────────────────────────
    GHOST CARD (follow-up pendente)

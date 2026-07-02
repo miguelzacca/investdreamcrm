@@ -9,12 +9,15 @@ import { TemperatureBadge } from '@/components/ui/Badge';
 import { CloseDealModal } from '@/components/modals/CloseDealModal';
 import { LeadExpectationModal } from '@/components/modals/LeadExpectationModal';
 import { FollowUpModal } from '@/components/modals/FollowUpModal';
+import { ReassignLeadModal } from '@/components/modals/ReassignLeadModal';
 import { trackLeadContact } from '@/lib/tracking';
 import { KanbanPopups } from './KanbanPopups';
 import styles from './KanbanBoard.module.css';
 
 interface KanbanBoardProps {
   initialLeads: Lead[];
+  agents?: { id: string; name: string }[];
+  currentAgentId?: string;
 }
 
 const STAGES: { id: FunnelStage; title: string; color: string; emoji: string }[] = [
@@ -290,7 +293,10 @@ function LeadCard({
 }
 
 /* ─── Main Board ─── */
-export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
+export function KanbanBoard({ initialLeads, agents, currentAgentId }: KanbanBoardProps) {
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === 'ADMIN';
+
   const [leads, setLeads] = useState(initialLeads);
   const [draggedLeadId, setDraggedLeadId] = useState<string | null>(null);
   const [expandedColumns, setExpandedColumns] = useState<Record<string, boolean>>({});
@@ -343,6 +349,7 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
   const [pendingExpectationLeadId, setPendingExpectationLeadId] = useState<string | null>(null);
   const [pendingExpectationStage, setPendingExpectationStage] = useState<FunnelStage | null>(null);
   const [pendingFollowUpLeadId, setPendingFollowUpLeadId] = useState<string | null>(null);
+  const [pendingReassignLeadId, setPendingReassignLeadId] = useState<string | null>(null);
 
   const toggleExpandColumn = (stageId: string) => {
     setExpandedColumns(prev => {
@@ -669,6 +676,28 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
                         </svg>
                         <span>IA</span>
                       </button>
+                      {/* Reassign pill */}
+                      {isAdmin && agents && agents.length > 0 && (
+                        <button
+                          type="button"
+                          className={styles.cardActionBtn}
+                          data-variant="reassign"
+                          title="Reatribuir a outro corretor"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            setPendingReassignLeadId(lead.id);
+                          }}
+                        >
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M17 3l4 4-4 4"/>
+                            <path d="M3 17l4-4 4 4"/>
+                            <path d="M21 7H7a4 4 0 0 0-4 4v0"/>
+                            <path d="M3 17h14a4 4 0 0 0 4-4v0"/>
+                          </svg>
+                          <span>Repassar</span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -747,6 +776,20 @@ export function KanbanBoard({ initialLeads }: KanbanBoardProps) {
               l.id === pendingFollowUpLeadId ? { ...l, isFollowUp: true, funnelStage: 'NEW_LEAD' } : l
             ));
             setPendingFollowUpLeadId(null);
+          }}
+        />
+      )}
+
+      {pendingReassignLeadId && agents && (
+        <ReassignLeadModal
+          isOpen={true}
+          onClose={() => setPendingReassignLeadId(null)}
+          leadId={pendingReassignLeadId}
+          agents={agents}
+          currentAgentId={currentAgentId}
+          onSuccess={(leadId) => {
+            setLeads(prev => prev.filter(l => l.id !== leadId));
+            setPendingReassignLeadId(null);
           }}
         />
       )}

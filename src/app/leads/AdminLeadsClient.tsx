@@ -99,7 +99,12 @@ export default function AdminLeadsClient({
             <div className={styles.spinner} />
           </div>
         )}
-        <KanbanBoard initialLeads={leads} key={selectedAgentId ?? 'empty'} />
+        <KanbanBoard 
+          initialLeads={leads} 
+          key={selectedAgentId ?? 'empty'} 
+          agents={agents} 
+          currentAgentId={selectedAgentId ?? undefined} 
+        />
       </div>
 
       {/* Modal */}
