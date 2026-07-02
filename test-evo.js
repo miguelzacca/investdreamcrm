@@ -1,0 +1,1 @@
+const fetch = require('node-fetch'); fetch('https://imobhunter.up.railway.app/message/sendText/crm-admin', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: 'QpmZtsrwkBUYkw9LLXBP4Lx6rO+b0pOe3WwDqh+wt6U=' }, body: JSON.stringify({ number: '5547997431089', text: 'Test message from InvestDreamCRM' }) }).then(r = 

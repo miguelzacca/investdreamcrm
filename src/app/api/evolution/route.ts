@@ -20,7 +20,12 @@ export async function GET(req: NextRequest) {
     
     if (action === 'connect') {
       let status = await getInstanceStatus();
-      if (!status || status.error) {
+      // Se não existe, deu erro ou está fechada, vamos recriar do zero para evitar bugs do Evolution
+      if (!status || status.error || status?.instance?.state === 'close') {
+        console.log('[evolution/connect] Recriando instância...');
+        await deleteInstance();
+        // Um pequeno delay para garantir que o Evolution deletou
+        await new Promise(r => setTimeout(r, 1000));
         const created = await createInstance();
         if (created?.status === 401) {
           return NextResponse.json({ error: 'Evolution API Key Inválida ou Ausente.' }, { status: 401 });
@@ -34,15 +39,11 @@ export async function GET(req: NextRequest) {
     }
 
     if (action === 'logout') {
-      // Try a clean logout first. If the socket is dead (Connection Closed),
-      // the API returns 500 — in that case fall back to a full instance delete.
-      const logout = await logoutInstance();
-      const failed = logout?.status === 500 || logout?.response?.message?.some?.((m: string) => m.includes('Connection Closed'));
-      if (failed) {
-        console.warn('[evolution/logout] Logout failed (Connection Closed). Falling back to delete instance.');
-        await deleteInstance();
-      }
-      return NextResponse.json({ success: true, fallbackDelete: failed });
+      // Tentar logout limpo, mas SEMPRE deletar a instância para garantir que o próximo QR code seja limpo
+      await logoutInstance();
+      console.log('[evolution/logout] Deletando instância para garantir desconexão total.');
+      await deleteInstance();
+      return NextResponse.json({ success: true, fallbackDelete: true });
     }
 
     // Hard reset: delete + recreate instance from scratch

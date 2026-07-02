@@ -2,7 +2,7 @@ export const EVOLUTION_API_URL =
   process.env.EVOLUTION_API_URL || 'https://imobhunter.up.railway.app'
 export const EVOLUTION_API_KEY = process.env.EVOLUTION_API_KEY || '' // Deve ser configurado no .env
 
-export const ADMIN_INSTANCE_NAME = 'crm-admin'
+export const ADMIN_INSTANCE_NAME = 'crm-admin-v2'
 
 // Timeout for all Evolution API calls. Railway free tier can sleep and take
 // a long time to respond. Without a timeout, hanging requests block Node.js
