@@ -16,8 +16,8 @@ if (connectionString) {
   const pool = globalForPrisma.pool ?? new Pool({
     connectionString,
     max: process.env.NODE_ENV === 'production' ? 1 : 10,
-    idleTimeoutMillis: 10000,
-    connectionTimeoutMillis: 5000,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 15000,
   });
   if (process.env.NODE_ENV !== 'production') globalForPrisma.pool = pool;
   adapter = new PrismaPg(pool);

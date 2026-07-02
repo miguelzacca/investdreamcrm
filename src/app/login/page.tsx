@@ -487,6 +487,27 @@ export default function LoginPage() {
                       )}
                     </span>
                   </motion.button>
+
+                  {/* Forgot password link — inside the form for guaranteed visibility */}
+                  <div style={{ textAlign: "center", paddingTop: "0.25rem" }}>
+                    <a
+                      href="/login/forgot-password"
+                      style={{
+                        fontSize: "0.8rem",
+                        fontWeight: 500,
+                        color: "#6366f1",
+                        textDecoration: "none",
+                        letterSpacing: "-0.01em",
+                        opacity: 0.8,
+                        transition: "opacity 0.18s",
+                        display: "inline-block",
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
+                      onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.8")}
+                    >
+                      Esqueci minha senha
+                    </a>
+                  </div>
                 </form>
 
                 {/* Trust row */}

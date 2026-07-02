@@ -1,15 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Loader2, QrCode, LogOut, CheckCircle2 } from "lucide-react";
+import { Loader2, QrCode, LogOut, CheckCircle2, AlertTriangle, RefreshCcw } from "lucide-react";
 
 export default function WhatsAppAdminPage() {
   const [status, setStatus] = useState<string>("loading");
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const pollIntervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const errorCountRef = useRef(0);
 
   const fetchStatus = async () => {
     try {
@@ -21,26 +25,41 @@ export default function WhatsAppAdminPage() {
         } else {
           setStatus("disconnected");
         }
+        errorCountRef.current = 0; // reset backoff on success
       } else {
         setStatus("disconnected");
+        errorCountRef.current = 0;
       }
     } catch (err) {
       console.error(err);
       setStatus("error");
+      errorCountRef.current += 1;
     } finally {
       setLoading(false);
     }
   };
 
+  const scheduleNextPoll = () => {
+    if (pollIntervalRef.current) clearTimeout(pollIntervalRef.current);
+    // Backoff: 15s normally, doubles on errors up to 60s max
+    const delay = Math.min(15000 * Math.pow(2, errorCountRef.current), 60000);
+    pollIntervalRef.current = setTimeout(async () => {
+      await fetchStatus();
+      scheduleNextPoll();
+    }, delay);
+  };
+
   useEffect(() => {
-    fetchStatus();
-    const interval = setInterval(fetchStatus, 5000);
-    return () => clearInterval(interval);
+    fetchStatus().then(scheduleNextPoll);
+    return () => {
+      if (pollIntervalRef.current) clearTimeout(pollIntervalRef.current);
+    };
   }, []);
 
   const handleConnect = async () => {
     setLoading(true);
     setQrCode(null);
+    setError(null);
     try {
       const res = await fetch("/api/evolution?action=connect");
       if (res.ok) {
@@ -50,9 +69,13 @@ export default function WhatsAppAdminPage() {
         } else {
           await fetchStatus();
         }
+      } else {
+        const err = await res.json();
+        setError(err?.error || "Erro ao conectar. Tente novamente.");
       }
     } catch (err) {
       console.error(err);
+      setError("Erro de rede ao conectar.");
     } finally {
       setLoading(false);
     }
@@ -60,12 +83,36 @@ export default function WhatsAppAdminPage() {
 
   const handleDisconnect = async () => {
     setLoading(true);
+    setError(null);
     try {
-      await fetch("/api/evolution?action=logout");
+      const res = await fetch("/api/evolution?action=logout");
+      const data = await res.json();
       setQrCode(null);
+      // Force disconnected immediately — the Evolution API may still briefly return
+      // 'open' after deletion, so we can't rely on fetchStatus() alone.
+      setStatus("disconnected");
+      if (data?.fallbackDelete) {
+        setError("Sessão travada detectada. A instância foi redefinida. Clique em 'Gerar QR Code' para reconectar.");
+      }
       await fetchStatus();
     } catch (err) {
       console.error(err);
+      setError("Erro ao desconectar. Tente o Reset Forçado abaixo.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReset = async () => {
+    setLoading(true);
+    setError(null);
+    setQrCode(null);
+    setStatus("disconnected"); // Force UI update immediately
+    try {
+      await fetch("/api/evolution?action=reset");
+    } catch (err) {
+      console.error(err);
+      setError("Erro ao resetar a instância.");
     } finally {
       setLoading(false);
     }
@@ -104,21 +151,40 @@ export default function WhatsAppAdminPage() {
             )}
           </div>
 
+          {error && (
+            <div className="flex items-start gap-2 rounded-md border border-yellow-500/40 bg-yellow-500/10 p-3 text-sm text-yellow-700 dark:text-yellow-400">
+              <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
           {status === "open" ? (
-            <Button variant="danger" onClick={handleDisconnect} disabled={loading}>
-              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LogOut className="mr-2 h-4 w-4" />}
-              Desconectar WhatsApp
-            </Button>
+            <div className="flex flex-wrap gap-3">
+              <Button variant="danger" onClick={handleDisconnect} disabled={loading}>
+                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LogOut className="mr-2 h-4 w-4" />}
+                Desconectar WhatsApp
+              </Button>
+              <Button variant="outline" onClick={handleReset} disabled={loading}>
+                <RefreshCcw className="mr-2 h-4 w-4" />
+                Reset Forçado
+              </Button>
+            </div>
           ) : (
             <div className="space-y-4">
-              <Button onClick={handleConnect} disabled={loading || !!qrCode}>
-                {loading && !qrCode ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <QrCode className="mr-2 h-4 w-4" />
-                )}
-                Gerar QR Code
-              </Button>
+              <div className="flex flex-wrap gap-3">
+                <Button onClick={handleConnect} disabled={loading || !!qrCode}>
+                  {loading && !qrCode ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <QrCode className="mr-2 h-4 w-4" />
+                  )}
+                  Gerar QR Code
+                </Button>
+                <Button variant="outline" onClick={handleReset} disabled={loading}>
+                  <RefreshCcw className="mr-2 h-4 w-4" />
+                  Reset Forçado
+                </Button>
+              </div>
 
               {qrCode && (
                 <div className="mt-4 p-4 border rounded-md bg-white w-fit mx-auto">

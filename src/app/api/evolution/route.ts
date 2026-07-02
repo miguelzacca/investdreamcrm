@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import { createInstance, connectInstance, getInstanceStatus, logoutInstance } from '@/lib/evolution';
+import { createInstance, connectInstance, getInstanceStatus, logoutInstance, deleteInstance } from '@/lib/evolution';
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -34,8 +34,21 @@ export async function GET(req: NextRequest) {
     }
 
     if (action === 'logout') {
+      // Try a clean logout first. If the socket is dead (Connection Closed),
+      // the API returns 500 — in that case fall back to a full instance delete.
       const logout = await logoutInstance();
-      return NextResponse.json(logout);
+      const failed = logout?.status === 500 || logout?.response?.message?.some?.((m: string) => m.includes('Connection Closed'));
+      if (failed) {
+        console.warn('[evolution/logout] Logout failed (Connection Closed). Falling back to delete instance.');
+        await deleteInstance();
+      }
+      return NextResponse.json({ success: true, fallbackDelete: failed });
+    }
+
+    // Hard reset: delete + recreate instance from scratch
+    if (action === 'reset') {
+      await deleteInstance();
+      return NextResponse.json({ success: true });
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
@@ -44,3 +57,4 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+

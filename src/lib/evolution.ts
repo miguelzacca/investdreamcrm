@@ -4,6 +4,12 @@ export const EVOLUTION_API_KEY = process.env.EVOLUTION_API_KEY || '' // Deve ser
 
 export const ADMIN_INSTANCE_NAME = 'crm-admin'
 
+// Timeout for all Evolution API calls. Railway free tier can sleep and take
+// a long time to respond. Without a timeout, hanging requests block Node.js
+// connections and exhaust the Prisma/Postgres pool, causing DB errors in
+// unrelated routes.
+const EVOLUTION_TIMEOUT_MS = 8000
+
 export async function getInstanceStatus(
   instanceName: string = ADMIN_INSTANCE_NAME,
 ) {
@@ -15,6 +21,7 @@ export async function getInstanceStatus(
           apikey: EVOLUTION_API_KEY,
         },
         cache: 'no-store',
+        signal: AbortSignal.timeout(EVOLUTION_TIMEOUT_MS),
       },
     )
     if (!res.ok) return null
@@ -41,6 +48,7 @@ export async function createInstance(
         qrcode: true,
         integration: 'WHATSAPP-BAILEYS',
       }),
+      signal: AbortSignal.timeout(EVOLUTION_TIMEOUT_MS),
     })
     return await res.json()
   } catch (err) {
@@ -60,6 +68,7 @@ export async function connectInstance(
           apikey: EVOLUTION_API_KEY,
         },
         cache: 'no-store',
+        signal: AbortSignal.timeout(EVOLUTION_TIMEOUT_MS),
       },
     )
     return await res.json()
@@ -80,11 +89,35 @@ export async function logoutInstance(
         headers: {
           apikey: EVOLUTION_API_KEY,
         },
+        signal: AbortSignal.timeout(EVOLUTION_TIMEOUT_MS),
       },
     )
     return await res.json()
   } catch (err) {
     console.error('Error logging out instance:', err)
+    return null
+  }
+}
+
+// Hard-reset: deletes the instance entirely so it can be recreated from scratch.
+// Use when logout fails with "Connection Closed" (dead socket).
+export async function deleteInstance(
+  instanceName: string = ADMIN_INSTANCE_NAME,
+) {
+  try {
+    const res = await fetch(
+      `${EVOLUTION_API_URL}/instance/delete/${instanceName}`,
+      {
+        method: 'DELETE',
+        headers: {
+          apikey: EVOLUTION_API_KEY,
+        },
+        signal: AbortSignal.timeout(EVOLUTION_TIMEOUT_MS),
+      },
+    )
+    return await res.json()
+  } catch (err) {
+    console.error('Error deleting instance:', err)
     return null
   }
 }
@@ -117,6 +150,7 @@ export async function sendText(
           number: jid,
           text: text,
         }),
+        signal: AbortSignal.timeout(EVOLUTION_TIMEOUT_MS),
       },
     )
 
