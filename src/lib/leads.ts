@@ -245,7 +245,7 @@ export async function reassignLead(leadId: string) {
         await sendText(
           ADMIN_INSTANCE_NAME,
           target.whatsApp,
-          `*[REDISTRIBUIÇÃO]*\n\n${aiMessage}`,
+          `*REDISTRIBUIÇÃO*\n\n${aiMessage}`,
         )
       } else {
         console.warn(
