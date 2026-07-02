@@ -19,6 +19,7 @@ export async function GET(request: Request) {
       where: {
         funnelStage: "NEW_LEAD",
         firstContactedAt: null,
+        isArchived: false,
         createdAt: {
           lt: fifteenMinutesAgo,
         },

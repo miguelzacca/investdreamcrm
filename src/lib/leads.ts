@@ -148,7 +148,10 @@ export async function createLeadRoundRobin(data: LeadInput) {
         )
         await sendText(ADMIN_INSTANCE_NAME, target.whatsApp, aiMessage)
       } else {
-        console.warn('[createLeadRoundRobin] WA instance not open, state:', instanceState)
+        console.warn(
+          '[createLeadRoundRobin] WA instance not open, state:',
+          instanceState,
+        )
       }
     } catch (err) {
       console.error('[createLeadRoundRobin] whatsapp notification error:', err)
@@ -232,7 +235,7 @@ export async function reassignLead(leadId: string) {
       const status = await getInstanceStatus(ADMIN_INSTANCE_NAME)
       const instanceState = status?.instance?.state ?? status?.state
       if (instanceState === 'open') {
-        const leadUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/leads/${updatedLead.id}`
+        const leadUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard`
         const aiMessage = await generateLeadNotificationMessage(
           updatedLead.name,
           updatedLead.interest,
@@ -245,7 +248,10 @@ export async function reassignLead(leadId: string) {
           `*[REDISTRIBUIÇÃO]*\n\n${aiMessage}`,
         )
       } else {
-        console.warn('[reassignLead] WA instance not open, state:', instanceState)
+        console.warn(
+          '[reassignLead] WA instance not open, state:',
+          instanceState,
+        )
       }
     } catch (err) {
       console.error('[reassignLead] whatsapp notification error:', err)
