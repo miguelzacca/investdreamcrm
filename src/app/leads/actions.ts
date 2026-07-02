@@ -6,6 +6,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { FunnelStage, Temperature } from "@prisma/client";
 import { sendNewLeadEmail } from "@/lib/mailer";
+import { reassignLead } from "@/lib/leads";
 
 export async function getActiveLeads() {
   const session = await getServerSession(authOptions);
@@ -299,4 +300,31 @@ export async function reassignLeadToAgent(leadId: string, newAgentId: string) {
   revalidatePath("/leads");
   revalidatePath(`/leads/${leadId}`);
   revalidatePath("/dashboard");
+}
+
+export async function reassignLeadToQueue(leadId: string) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id || session.user.role !== "ADMIN") {
+    throw new Error("Acesso negado. Apenas administradores podem reatribuir leads.");
+  }
+
+  // reassignLead takes care of picking the next agent, updating the pointer,
+  // and sending email, push and whatsapp notifications.
+  const result = await reassignLead(leadId);
+
+  // We also ensure it's set to NEW_LEAD and clear follow-up state
+  await prisma.lead.update({
+    where: { id: leadId },
+    data: {
+      funnelStage: "NEW_LEAD",
+      isFollowUp: false,
+      followUpDate: null,
+    }
+  });
+
+  revalidatePath("/leads");
+  revalidatePath(`/leads/${leadId}`);
+  revalidatePath("/dashboard");
+
+  return { newAgentId: result.lead.agentId };
 }

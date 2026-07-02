@@ -3,7 +3,7 @@
 import React, { useState, useTransition } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
-import { reassignLeadToAgent } from "@/app/leads/actions";
+import { reassignLeadToAgent, reassignLeadToQueue } from "@/app/leads/actions";
 
 interface Agent {
   id: string;
@@ -36,12 +36,17 @@ export function ReassignLeadModal({
 
     startTransition(async () => {
       try {
-        await reassignLeadToAgent(leadId, selectedAgentId);
-        onSuccess(leadId, selectedAgentId);
+        if (selectedAgentId === "AUTO") {
+          const result = await reassignLeadToQueue(leadId);
+          onSuccess(leadId, result.newAgentId);
+        } else {
+          await reassignLeadToAgent(leadId, selectedAgentId);
+          onSuccess(leadId, selectedAgentId);
+        }
         onClose();
-      } catch (error) {
+      } catch (error: any) {
         console.error("Erro ao reatribuir lead", error);
-        alert("Ocorreu um erro ao reatribuir o lead.");
+        alert(error.message || "Ocorreu um erro ao reatribuir o lead.");
       }
     });
   }
@@ -62,7 +67,8 @@ export function ReassignLeadModal({
             style={{ width: "100%", padding: "0.5rem", borderRadius: "0.375rem", border: "1px solid #ccc" }}
             required
           >
-            <option value="" disabled>Selecione um corretor</option>
+            <option value="" disabled>Selecione um corretor ou opção</option>
+            <option value="AUTO" style={{ fontWeight: "bold" }}>🔄 Fila Automática (Seguir a roda)</option>
             {availableAgents.map((agent) => (
               <option key={agent.id} value={agent.id}>
                 {agent.name}
