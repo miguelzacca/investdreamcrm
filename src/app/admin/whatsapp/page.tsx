@@ -164,7 +164,7 @@ export default function WhatsAppAdminPage() {
                 {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LogOut className="mr-2 h-4 w-4" />}
                 Desconectar WhatsApp
               </Button>
-              <Button variant="outline" onClick={handleReset} disabled={loading}>
+              <Button variant="secondary" onClick={handleReset} disabled={loading}>
                 <RefreshCcw className="mr-2 h-4 w-4" />
                 Reset Forçado
               </Button>
@@ -180,7 +180,7 @@ export default function WhatsAppAdminPage() {
                   )}
                   Gerar QR Code
                 </Button>
-                <Button variant="outline" onClick={handleReset} disabled={loading}>
+                <Button variant="secondary" onClick={handleReset} disabled={loading}>
                   <RefreshCcw className="mr-2 h-4 w-4" />
                   Reset Forçado
                 </Button>
